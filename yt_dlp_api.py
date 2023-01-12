@@ -1,6 +1,8 @@
 from flask import Flask, jsonify
 from flask_basicauth import BasicAuth
 from healthcheck import HealthCheck
+import json
+import yt_dlp
 
 app = Flask(__name__)
 
@@ -31,9 +33,11 @@ def hello(name=None):
     })
 
 
-@app.route('/authd', methods=['GET'])
+@app.route('/ytdlp', methods=['GET'])
 @basic_auth.required
 def authd(name=None):
-    return jsonify({
-        'message': 'Hello auth!'
-    })
+    ydl_opts = {}
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        URL = 'https://www.youtube.com/watch?v=BaW_jenozKc'
+        info = ydl.extract_info(URL, download=False)
+        return jsonify(ydl.sanitize_info(info))
