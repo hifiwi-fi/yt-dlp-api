@@ -40,3 +40,4 @@ pip freeze > requirements.txt
 - https://flask.palletsprojects.com/en/2.2.x/installation/
 - https://docs.python.org/3/tutorial/venv.html
 - https://docs.brew.sh/Homebrew-and-Python
+- https://kindofblue.com/2019/04/simple-json-api-with-flask/
