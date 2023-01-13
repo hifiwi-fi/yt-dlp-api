@@ -24,6 +24,12 @@ source venve/bin/activate
 pip3 install -r requirements.txt
 ```
 
+- Run the server
+
+```console
+flask --app yt_dlp_api --debug run
+```
+
 - Update requirements.txt
 
 ```console

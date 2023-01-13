@@ -1,0 +1,26 @@
+name: tests
+
+on: [pull_request, push]
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python_version: ['3.x']
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python_version }}
+          architecture: 'x64'
+
+    - run: pip install flake8
+    - run: flake8 . --max-line-length=120
+
