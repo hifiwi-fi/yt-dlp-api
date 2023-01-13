@@ -5,6 +5,8 @@ from healthcheck import HealthCheck
 import json
 import yt_dlp
 
+# This is just a prototype
+
 app = Flask(__name__)
 
 app.config['BASIC_AUTH_USERNAME'] = 'user'
@@ -67,16 +69,20 @@ def video_info():
 
     format_opts = request.args.get('format')
     if format_opts is None:
-        abort(400)
+        abort(400, 'format querystring required')
 
     url = request.args.get('url')
     if url is None:
-        abort(400)
+        abort(400, 'url querystring required')
 
     ydl_opts = {
         'format': format_opts,
+        'noplaylist': True
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=False)
-        return jsonify(ydl.sanitize_info(info))
+        try:
+            info = ydl.extract_info(url, download=False)
+            return jsonify(ydl.sanitize_info(info))
+        except Exception as e:
+            abort(500, str(e))
