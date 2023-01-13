@@ -27,6 +27,7 @@ health.add_check(app_available)
 
 app.add_url_rule("/health", "healthcheck", view_func=health.run)
 
+
 @app.errorhandler(HTTPException)
 def handle_exception(e):
     """Return JSON instead of HTML for HTTP errors."""
@@ -59,6 +60,7 @@ def authd():
         info = ydl.extract_info(URL, download=False)
         return jsonify(ydl.sanitize_info(info))
 
+
 @app.route('/info', methods=['GET'])
 @basic_auth.required
 def video_info():
@@ -78,6 +80,3 @@ def video_info():
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=False)
         return jsonify(ydl.sanitize_info(info))
-
-
-
