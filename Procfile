@@ -1,2 +1,2 @@
 # Modify this Procfile to fit your needs
-web: gunicorn yt_dlp_api:app
+web: gunicorn -b '[::]:8080' yt_dlp_api:app
