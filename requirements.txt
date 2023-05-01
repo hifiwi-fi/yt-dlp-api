@@ -12,5 +12,5 @@ py-healthcheck==1.10.1
 pycryptodomex==3.17
 six==1.16.0
 websockets==11.0.2
-Werkzeug==2.3.1
+Werkzeug==2.3.2
 yt-dlp==2023.3.4
