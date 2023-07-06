@@ -13,4 +13,4 @@ pycryptodomex==3.18.0
 six==1.16.0
 websockets==11.0.3
 Werkzeug==2.3.6
-yt-dlp==2023.6.22
+yt-dlp==2023.7.6
