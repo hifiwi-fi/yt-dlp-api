@@ -1,5 +1,5 @@
 Brotli==1.0.9
-certifi==2023.5.7
+certifi==2023.7.22
 click==8.1.6
 Flask==2.3.2
 Flask-BasicAuth==0.2.0
