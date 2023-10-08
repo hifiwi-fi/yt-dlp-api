@@ -15,7 +15,7 @@ python3 -m venv venv
 - Activate virtual env
 
 ```console
-source venve/bin/activate
+source venv/bin/activate
 ```
 
 - Install dependencies with pip
