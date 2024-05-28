@@ -1,1 +1,4 @@
 fly.toml
+venv
+__pycache__
+.github
