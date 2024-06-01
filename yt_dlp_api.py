@@ -76,6 +76,7 @@ def video_info():
         abort(400, 'url querystring required')
 
     ydl_opts = {
+        'ignore_no_formats_error': True,
         'format': format_opts,
         'noplaylist': True
     }
