@@ -3,7 +3,7 @@ certifi==2024.7.4
 click==8.1.7
 Flask==3.0.3
 Flask-BasicAuth==0.2.0
-gunicorn==22.0.0
+gunicorn==23.0.0
 itsdangerous==2.2.0
 Jinja2==3.1.4
 MarkupSafe==2.1.5
@@ -11,6 +11,6 @@ mutagen==1.47.0
 py-healthcheck==1.10.1
 pycryptodomex==3.20.0
 six==1.16.0
-websockets==12.0
-Werkzeug==3.0.3
+websockets==13.0.1
+Werkzeug==3.0.4
 yt-dlp @ git+https://github.com/yt-dlp/yt-dlp@master
