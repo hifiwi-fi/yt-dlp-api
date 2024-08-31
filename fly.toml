@@ -7,12 +7,13 @@ app = "yt-dlp-api"
 primary_region = "lax"
 kill_signal = "SIGINT"
 kill_timeout = "5s"
+swap_size_mb = 1024
 
 [experimental]
   auto_rollback = true
 
 [build]
-  builder = "paketobuildpacks/builder:base"
+  dockerfile = "Dockerfile"
 
 [env]
   PORT = "8080"

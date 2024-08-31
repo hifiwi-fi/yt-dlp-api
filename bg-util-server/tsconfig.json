@@ -1,0 +1,10 @@
+{
+  "extends": "@voxpelli/tsconfig/node20.json",
+  "compilerOptions": {},
+  "include": [
+    "bg-util-server/**/*",
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

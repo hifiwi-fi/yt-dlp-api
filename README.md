@@ -24,6 +24,12 @@ source venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
+- Copy the extra yt-dlp plugins
+
+```console
+./copy-getpot_bgutils.sh
+```
+
 - Run the server
 
 ```console
