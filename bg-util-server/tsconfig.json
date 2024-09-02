@@ -2,7 +2,8 @@
   "extends": "@voxpelli/tsconfig/node20.json",
   "compilerOptions": {},
   "include": [
-    "bg-util-server/**/*",
+    "index.js",
+    "session_manager.js"
   ],
   "exclude": [
     "node_modules"

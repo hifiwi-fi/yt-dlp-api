@@ -13,14 +13,42 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         python_version: ['3.x']
+        node_version: ['lts/*']
 
     steps:
     - uses: actions/checkout@v4
+
     - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python_version }}
         architecture: 'x64'
 
-    - run: pip install flake8
-    - run: flake8 . --max-line-length=120
+    - name: Set up Python virtual environment
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+      working-directory: main-server
 
+    - name: Install Flake8
+      run: |
+        source venv/bin/activate
+        pip install flake8
+      working-directory: main-server
+
+    - name: Run Flake8
+      run: |
+        source venv/bin/activate
+        flake8 . --max-line-length=120
+      working-directory: main-server
+
+    - name: Use Node.js ${{ matrix.node_version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node_version }}
+
+    - run: npm i
+      working-directory: ./bg-util-server
+
+    - run: npm test
+      working-directory: ./bg-util-server

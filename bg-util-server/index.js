@@ -39,7 +39,9 @@ fastify.post('/get_pot', {
     }
   }
 }, async (request, reply) => {
+  // @ts-ignore
   const visitorData = request.body.visitor_data
+  // @ts-ignore
   const dataSyncId = request.body.data_sync_id
 
   let visitorIdentifier
