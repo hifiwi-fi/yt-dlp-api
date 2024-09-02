@@ -1,12 +1,16 @@
 FROM alpine:3.20
 
-RUN apk add --no-cache python3 py3-pip nodejs npm git supervisor
+RUN apk add --no-cache python3 py3-pip nodejs npm git tmux go
 
-# Set up Python Deps
 WORKDIR /usr/src/app
-
 COPY --link . .
 
+ENV GOPATH="$HOME/go"
+ENV PATH="$PATH:$GOPATH/bin"
+
+RUN go install github.com/DarthSim/overmind/v2@latest
+
+# Set up Python Deps
 WORKDIR /usr/src/app/main-server
 
 ENV PYTHONUNBUFFERED=1 \
@@ -26,4 +30,4 @@ WORKDIR /usr/src/app
 
 EXPOSE 8080
 
-CMD ["supervisord", "-c", "./supervisor.conf"]
+CMD ["overmind", "start"]
