@@ -2,7 +2,7 @@
 
 Running yt-dlp as a long running flask server.
 
-Requires a secondary node.js server for generating Proof-of-orgin botguard tokesn.
+Requires a secondary node.js server for generating Proof-of-origin botguard tokens.
 
 This a rapidly evolving solution.
 
