@@ -2,6 +2,18 @@
 
 Running yt-dlp as a long running flask server.
 
+Requires a secondary node.js server for generating Proof-of-orgin botguard tokesn.
+
+This a rapidly evolving solution.
+
+## PO Tokens
+
+Currently running:
+
+- https://github.com/yt-dlp/yt-dlp-wiki/pull/40
+- https://github.com/coletdjnz/yt-dlp-get-pot
+- https://github.com/Brainicism/bgutil-ytdlp-pot-provider
+
 ## Notes
 
 Not using python much these days so here are some reminders:
