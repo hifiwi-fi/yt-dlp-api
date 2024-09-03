@@ -14,4 +14,4 @@ six==1.16.0
 websockets==13.0.1
 Werkzeug==3.0.4
 yt-dlp @ git+https://github.com/seproDev/yt-dlp@pass_po_token
-yt-dlp-get-pot==0.0.2
+yt-dlp-get-pot==0.0.3
