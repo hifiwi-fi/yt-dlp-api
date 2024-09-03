@@ -25,13 +25,11 @@ jobs:
 
     - name: Install Flake8
       run: |
-        source venv/bin/activate
         pip install flake8
       working-directory: main-server
 
     - name: Run Flake8
       run: |
-        source venv/bin/activate
         flake8 . --max-line-length=120
       working-directory: main-server
 

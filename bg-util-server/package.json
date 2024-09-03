@@ -4,7 +4,7 @@
   "description": "Running yt-dlp as a long running flask server.",
   "type": "module",
   "scripts": {
-    "start": "node ./bg-util-server/index.js",
+    "start": "node index.js",
     "test": "run-s test:*",
     "test:eslint": "eslint .",
     "test:tsc": "tsc"
