@@ -13,5 +13,6 @@ pycryptodomex==3.20.0
 six==1.16.0
 websockets==13.0.1
 Werkzeug==3.0.4
-yt-dlp @ git+https://github.com/seproDev/yt-dlp@pass_po_token
+yt-dlp @ git+https://github.com/yt-dlp/yt-dlp@master
 yt-dlp-get-pot==0.1.1
+bgutil_ytdlp_pot_provider==0.6.0

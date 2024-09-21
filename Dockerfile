@@ -20,8 +20,6 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN ./copy-getpot_bgutil.sh
-
 WORKDIR /usr/src/app/bg-util-server
 
 RUN npm i --omit=dev
