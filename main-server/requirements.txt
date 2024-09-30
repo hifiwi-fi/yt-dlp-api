@@ -14,5 +14,5 @@ six==1.16.0
 websockets==13.1
 Werkzeug==3.0.4
 yt-dlp @ git+https://github.com/yt-dlp/yt-dlp@master
-yt-dlp-get-pot==0.1.1
+yt-dlp-get-pot==0.2.0
 bgutil_ytdlp_pot_provider==0.6.0
