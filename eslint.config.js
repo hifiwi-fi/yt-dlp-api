@@ -1,5 +1,8 @@
 import neostandard from 'neostandard'
 
 export default neostandard({
-  ignores: [],
+  ignores: [
+    'scratch/*',
+    'ytdlp-server/*'
+  ],
 })

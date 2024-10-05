@@ -4,6 +4,10 @@
 version: 2
 updates:
   - package-ecosystem: "pip"
+    directory: "/ytdlp-server"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "daily"

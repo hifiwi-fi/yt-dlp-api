@@ -16,11 +16,14 @@ swap_size_mb = 1024
   dockerfile = "Dockerfile"
 
 [env]
-  PORT = "8080"
+  PORT = "5000"
+  FASTIFY_ADDRESS = "0.0.0.0"
+  FASTIFY_LOG_LEVEL = "info"
+  FASTIFY_OPTIONS = "true"
 
 [[services]]
   protocol = "tcp"
-  internal_port = 8080
+  internal_port = 5000
   processes = ["app"]
   auto_stop_machines = true
   auto_start_machines = true
@@ -44,3 +47,16 @@ swap_size_mb = 1024
     timeout = "2s"
     grace_period = "1s"
     restart_limit = 0
+
+  [[services.http_checks]]
+    interval = "10s"
+    timeout = "2s"
+    grace_period = "5s"
+    restart_limit = 0
+    method = "get"
+    path = "/health"
+    protocol = "http"
+
+[metrics]
+  port = 9093 # TODO: make this consistent
+  path = "/metrics"

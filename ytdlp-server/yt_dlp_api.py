@@ -1,6 +1,5 @@
 from flask import Flask, jsonify, abort, request
 from werkzeug.exceptions import HTTPException
-from flask_basicauth import BasicAuth
 from healthcheck import HealthCheck
 import json
 import yt_dlp
@@ -9,12 +8,8 @@ import yt_dlp
 
 app = Flask(__name__)
 
-app.config['BASIC_AUTH_USERNAME'] = 'user'
-app.config['BASIC_AUTH_PASSWORD'] = 'pass'
 app.config.from_prefixed_env()
 
-
-basic_auth = BasicAuth(app)
 
 health = HealthCheck()
 
@@ -49,12 +44,11 @@ def handle_exception(e):
 def hello():
     return jsonify({
         'message': 'Hello world!',
-        'service': 'yt-dlp-api'
+        'service': 'ytdlp-python-server'
     })
 
 
 @app.route('/ytdlp', methods=['GET'])
-@basic_auth.required
 def authd():
     ydl_opts = {}
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -64,7 +58,6 @@ def authd():
 
 
 @app.route('/info', methods=['GET'])
-@basic_auth.required
 def video_info():
 
     format_opts = request.args.get('format')
