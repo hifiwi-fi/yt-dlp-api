@@ -1,68 +1,17 @@
 # yt-dlp-api
 
-Running yt-dlp as a long running flask server.
+Running yt-dlp, youtubei.js, and googlevideo in a dedicated fastify service.
 
-Requires a secondary node.js server for generating Proof-of-origin botguard tokens.
+**Requirements**:
 
-This a rapidly evolving solution.
+- Node.js > 22 (Top level)
+- Python 3 (ytdlp-server)
+- Protobuf
 
-## PO Tokens
+This is a rapidly evolving solution, so its doesn't make much sense to document thoroughly.
 
-Currently running:
+This service starts two processes: A fastify server which listens on 5000 and a python server (loopback only) on 5001. The fastify server makes requests to the flask server.
 
-- https://github.com/yt-dlp/yt-dlp-wiki/pull/40
-- https://github.com/coletdjnz/yt-dlp-get-pot
-- https://github.com/Brainicism/bgutil-ytdlp-pot-provider
+This is orchestrated in a Dockerfile, and can also boot from an npm start.
 
-## Notes
-
-Not using python much these days so here are some reminders:
-
-- Create a virtual env like this
-
-```console
-python3 -m venv venv
-```
-
-- Activate virtual env
-
-```console
-source venv/bin/activate
-```
-
-- Install dependencies with pip
-
-```console
-pip3 install -r requirements.txt
-```
-
-- Copy the extra yt-dlp plugins
-
-```console
-./copy-getpot_bgutil.sh
-```
-
-- Run the server
-
-```console
-flask --app yt_dlp_api --debug run
-```
-
-- Update requirements.txt
-
-```console
-pip freeze > requirements.txt
-```
-
-- Install a new dependency
-
-```console
-  pip3 install gunicorn
-```
-
-- https://stackoverflow.com/questions/41457612/how-to-use-requirements-txt-to-install-all-dependencies-in-a-python-project
-- https://flask.palletsprojects.com/en/2.2.x/installation/
-- https://docs.python.org/3/tutorial/venv.html
-- https://docs.brew.sh/Homebrew-and-Python
-- https://kindofblue.com/2019/04/simple-json-api-with-flask/
-- https://flask-basicauth.readthedocs.io/en/latest/
+[Python Notes]('./ytdlp-server/README.md')

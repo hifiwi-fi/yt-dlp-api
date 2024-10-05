@@ -1,17 +1,28 @@
+# Python related
 venv/
-
 *.pyc
 __pycache__/
-
 instance/
-
 .pytest_cache/
 .coverage
 htmlcov/
 
+# Build related
 dist/
 build/
 *.egg-info/
 
-node_modules
+# Node.js related
+node_modules/
 package-lock.json
+.nyc_output
+sandbox.js
+
+# Miscellaneous
+coverage/
+public/
+./yt-dlp
+.env
+dependency-graph.html
+*.dbml
+.tap
