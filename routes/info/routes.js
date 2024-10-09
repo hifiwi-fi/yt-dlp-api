@@ -1,13 +1,13 @@
 import { request as undiciRequest } from 'undici'
 
 /**
-* @import { FastifyPluginAsyncJsonSchemaToTs } from '@fastify/type-provider-json-schema-to-ts'
+* @import { FastifyPluginAsyncJsonSchemaToTs } from '@bret/type-provider-json-schema-to-ts'
 **/
 
 /**
  * @type {FastifyPluginAsyncJsonSchemaToTs}
 */
-export default async function ytDlpRoute (fastify, _opts) {
+export default async function ytDlpRoute(fastify, _opts) {
   fastify.get(
     '/',
     {
