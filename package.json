@@ -28,7 +28,7 @@
     "youtubei.js": "10.5.0"
   },
   "devDependencies": {
-    "bgutils-js": "^2.2.0",
+    "bgutils-js": "^3.0.0",
     "@bret/type-provider-json-schema-to-ts": "^4.0.2",
     "@types/jsdom": "^21.1.7",
     "@types/node": "^22.0.0",
