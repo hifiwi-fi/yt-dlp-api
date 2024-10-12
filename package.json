@@ -20,7 +20,7 @@
     "fastify-healthcheck": "^5.0.0",
     "fastify-metrics": "^12.1.0",
     "fastify-plugin": "^5.0.1",
-    "googlevideo": "github:LuanRT/googlevideo#6b1801c893d4d4e8fb1eaad12ff2d9821395593c",
+    "googlevideo": "github:LuanRT/googlevideo#eb9311e482da9dd0f39f9e3ff1434fef80cc454c",
     "hyperid": "^3.1.1",
     "jsdom": "^25.0.0",
     "secure-json-parse": "^2.7.0",

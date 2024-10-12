@@ -1,8 +1,8 @@
-import Innertube, { UniversalCache, Parser } from 'youtubei.js'
+import Innertube, { Parser, UniversalCache } from 'youtubei.js'
 import { onesieRequest, processMetadata } from '../../lib/onesie/index.js'
-import { TvConfig } from '../../lib/onesie/tv-config.js'
+import { YouTubeTVClientConfig } from '../../lib/onesie/tv-config.js'
 
-const tvConfigInstance = new TvConfig()
+const tvConfigInstance = new YouTubeTVClientConfig()
 
 const innertube = await Innertube.create({ cache: new UniversalCache(true) })
 
