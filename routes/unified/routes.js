@@ -7,7 +7,7 @@ import { request as undiciRequest } from 'undici'
 /**
  * @type {FastifyPluginAsyncJsonSchemaToTs}
 */
-export default async function ytDlpRoute(fastify, _opts) {
+export default async function ytDlpRoute (fastify, _opts) {
   fastify.get(
     '/',
     {
@@ -125,7 +125,7 @@ export default async function ytDlpRoute(fastify, _opts) {
  * @param {URL} parsedUrl - A valid URL object (already validated by Ajv).
  * @returns {boolean} - Returns true if the URL is for a YouTube or Google Video resource.
  */
-function isYouTubeUrl(parsedUrl) {
+function isYouTubeUrl (parsedUrl) {
   const validHosts = new Set([
     'www.youtube.com',
     'youtube.com',

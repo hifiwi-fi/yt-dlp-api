@@ -7,7 +7,7 @@ import { request as undiciRequest } from 'undici'
 /**
  * @type {FastifyPluginAsyncJsonSchemaToTs}
 */
-export default async function ytDlpRoute(fastify, _opts) {
+export default async function ytDlpRoute (fastify, _opts) {
   fastify.get(
     '/',
     {
