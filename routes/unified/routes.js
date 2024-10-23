@@ -42,6 +42,9 @@ export default async function ytDlpRoute (fastify, _opts) {
             },
             required: ['url'],
             additionalProperties: false
+          },
+          default: {
+            additionalProperties: true
           }
         }
       }
@@ -78,37 +81,43 @@ export default async function ytDlpRoute (fastify, _opts) {
               },
             })
 
-          const metadata = await response.body.json()
+          const replyBody = await response.body.json()
+
+          if (response.statusCode > 399) {
+            reply.status(response.statusCode)
+            return replyBody
+          }
 
           const responseData = /** @type {const} */({
             // @ts-ignore
-            url: metadata?.url,
+            url: replyBody?.url,
             // @ts-ignore
-            filesize_approx: metadata?.filesize_approx,
+            filesize_approx: replyBody?.filesize_approx,
             // @ts-ignore
-            duration: metadata?.duration,
+            duration: replyBody?.duration,
             // @ts-ignore
-            channel: metadata?.channel,
+            channel: replyBody?.channel,
             // @ts-ignore
-            title: metadata?.title,
+            title: replyBody?.title,
             // @ts-ignore
-            ext: metadata?.ext,
+            ext: replyBody?.ext,
             // @ts-ignore
-            _type: metadata?._type,
+            _type: replyBody?._type,
             // @ts-ignore
-            description: metadata?.description,
+            description: replyBody?.description,
             // @ts-ignore
-            uploader_url: metadata?.uploader_url,
+            uploader_url: replyBody?.uploader_url,
             // @ts-ignore
-            channel_url: metadata?.channel_url,
+            channel_url: replyBody?.channel_url,
             // @ts-ignore
-            thumbnail: metadata?.thumbnail,
+            thumbnail: replyBody?.thumbnail,
             // @ts-ignore
-            live_status: metadata?.live_status,
+            live_status: replyBody?.live_status,
             // @ts-ignore
-            release_timestamp: metadata?.release_timestamp
+            release_timestamp: replyBody?.release_timestamp
           })
 
+          reply.status(200)
           return responseData
         } catch (err) {
           fastify.log.error(new Error('Error while requesting yt-dlp endpoint data', { cause: err }))
