@@ -10,6 +10,6 @@ mutagen==1.47.0
 py-healthcheck==1.10.1
 pycryptodomex==3.21.0
 six==1.16.0
-websockets==13.1
+websockets==14.0
 Werkzeug==3.1.2
 yt-dlp[default]==2024.11.4
