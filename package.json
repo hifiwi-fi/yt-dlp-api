@@ -23,7 +23,7 @@
     "googlevideo": "^2.0.0",
     "hyperid": "^3.1.1",
     "jsdom": "^25.0.0",
-    "secure-json-parse": "^2.7.0",
+    "secure-json-parse": "^3.0.1",
     "undici": "^6.16.0",
     "youtubei.js": "11.0.1"
   },
