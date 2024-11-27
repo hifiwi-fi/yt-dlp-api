@@ -27,11 +27,21 @@ jobs:
       with:
         node-version: ${{ env.node_version }}
         registry-url: 'https://registry.npmjs.org'
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python_version }}
+        architecture: 'x64'
     - name: Start Redis
       uses: supercharge/redis-github-action@1.8.0
       with:
         redis-version: ${{ env.redis-version }}
     - uses: superfly/flyctl-actions/setup-flyctl@master
+    - name: Install Protoc using apt-get
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y protobuf-compiler
+    - name: Verify protoc installation
+      run: protoc --version
     - run: npm i
     - name: Archive lockfile
       uses: actions/upload-artifact@v4
