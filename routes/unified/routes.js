@@ -1,4 +1,5 @@
 import { request as undiciRequest } from 'undici'
+import { isYouTubeUrl } from '@bret/is-youtube-url'
 
 /**
 * @import { FastifyPluginAsyncJsonSchemaToTs } from '@bret/type-provider-json-schema-to-ts'
@@ -126,26 +127,6 @@ export default async function ytDlpRoute (fastify, _opts) {
       }
     }
   )
-}
-
-/**
- * Checks if a given URL belongs to YouTube or Google Video domains.
- *
- * @param {URL} parsedUrl - A valid URL object (already validated by Ajv).
- * @returns {boolean} - Returns true if the URL is for a YouTube or Google Video resource.
- */
-function isYouTubeUrl (parsedUrl) {
-  const validHosts = new Set([
-    'www.youtube.com',
-    'youtube.com',
-    'm.youtube.com',
-    'youtu.be',
-    'youtube-nocookie.com',
-    'googlevideo.com'
-  ])
-
-  // Return true if the host matches any known YouTube or Google video domains
-  return validHosts.has(parsedUrl.host)
 }
 
 const ytDlpFormats = /** @type {const} */ ({

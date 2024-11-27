@@ -25,7 +25,8 @@
     "jsdom": "^25.0.0",
     "secure-json-parse": "^3.0.1",
     "undici": "^6.16.0",
-    "youtubei.js": "11.0.1"
+    "youtubei.js": "11.0.1",
+    "@bret/is-youtube-url": "^1.0.3"
   },
   "devDependencies": {
     "bgutils-js": "^3.0.0",
