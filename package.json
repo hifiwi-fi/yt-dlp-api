@@ -58,7 +58,7 @@
     "url": "https://github.com/hifiwi-fi/yt-dlp-api.git"
   },
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=20.18.1"
   },
   "scripts": {
     "postinstall": "cd ytdlp-server/ && python3 -m venv venv && . venv/bin/activate && pip3 install -r requirements.txt",
