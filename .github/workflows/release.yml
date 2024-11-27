@@ -10,6 +10,8 @@ on:
 env:
   FORCE_COLOR: 1
   NPM_CONFIG_COLOR: always
+  node_version: lts/*
+  python_version: '3.x'
 
 concurrency:
   group: npm-bump
@@ -29,12 +31,8 @@ jobs:
         registry-url: 'https://registry.npmjs.org'
     - uses: actions/setup-python@v5
       with:
-        python-version: ${{ matrix.python_version }}
+        python-version: ${{ env.python_version }}
         architecture: 'x64'
-    - name: Start Redis
-      uses: supercharge/redis-github-action@1.8.0
-      with:
-        redis-version: ${{ env.redis-version }}
     - uses: superfly/flyctl-actions/setup-flyctl@master
     - name: Install Protoc using apt-get
       run: |
