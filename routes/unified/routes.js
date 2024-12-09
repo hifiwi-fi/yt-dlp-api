@@ -59,20 +59,24 @@ export default async function ytDlpRoute (fastify, _opts) {
       const parsedUrl = new URL(url)
 
       if (isYouTubeUrl(parsedUrl)) {
-        const results = await fastify.youtubei.onesieFormatRequest(
-          parsedUrl.toString(),
-          format,
-          fastify.youtubei.innertube,
-          fastify.youtubei.tvConfig
-        )
-        return results
+        try {
+          const results = await fastify.youtubei.onesieFormatRequest(
+            parsedUrl.toString(),
+            format,
+            fastify.youtubei.innertube,
+            fastify.youtubei.tvConfig
+          )
+          return results
+        } catch (err) {
+          request.log.error(err, 'Error when running onesie request')
+          throw err
+        }
       } else {
         try {
           const params = new URLSearchParams({
             url,
             format: ytDlpFormats[format]
           })
-
           const response = await undiciRequest(
             `http://${fastify.config.YTDLPAPI_HOST}/info?${params.toString()}`,
             {

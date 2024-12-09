@@ -20,9 +20,8 @@
     "fastify-healthcheck": "^5.0.0",
     "fastify-metrics": "^12.1.0",
     "fastify-plugin": "^5.0.1",
-    "googlevideo": "^2.0.0",
+    "googlevideo": "2.0.0",
     "hyperid": "^3.1.1",
-    "jsdom": "^25.0.0",
     "secure-json-parse": "^3.0.1",
     "undici": "^7.0.0",
     "youtubei.js": "11.0.1",
@@ -31,6 +30,7 @@
   "devDependencies": {
     "bgutils-js": "^3.0.0",
     "@bret/type-provider-json-schema-to-ts": "^4.0.2",
+    "jsdom": "^25.0.0",
     "@types/jsdom": "^21.1.7",
     "@types/node": "^22.0.0",
     "@voxpelli/tsconfig": "^15.0.0",
