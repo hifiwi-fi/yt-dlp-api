@@ -24,7 +24,7 @@
     "hyperid": "^3.1.1",
     "secure-json-parse": "^3.0.1",
     "undici": "^7.0.0",
-    "youtubei.js": "11.0.1",
+    "youtubei.js": "github:bcomnes/YouTube.js#patch-float",
     "@bret/is-youtube-url": "^1.0.5"
   },
   "devDependencies": {
