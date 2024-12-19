@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "bgutils-js": "^3.0.0",
-    "@bret/type-provider-json-schema-to-ts": "^4.0.2",
+    "@bret/type-provider-json-schema-to-ts": "^5.0.0",
     "jsdom": "^25.0.0",
     "@types/jsdom": "^21.1.7",
     "@types/node": "^22.0.0",
