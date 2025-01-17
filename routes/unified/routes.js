@@ -41,7 +41,10 @@ export default async function ytDlpRoute (fastify, _opts) {
               live_status: { type: 'string', nullable: true },
               release_timestamp: { type: 'number', nullable: true }
             },
-            required: ['url'],
+            oneOf: [
+              { required: ['url'] },
+              { required: ['live_status', 'release_timestamp'] },
+            ],
             additionalProperties: false
           },
           default: {
