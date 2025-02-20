@@ -1,7 +1,7 @@
 {
   "name": "yt-dlp-api",
   "description": "An API for efficiently and flexibly fetching media data from around the web",
-  "version": "2025.1.31",
+  "version": "2025.2.20",
   "type": "module",
   "author": "Bret Comnes <bcomnes@gmail.com> (https://bret.io)",
   "bugs": {
