@@ -71,8 +71,19 @@ export default async function ytDlpRoute (fastify, _opts) {
           )
           return results
         } catch (err) {
-          request.log.error(err, 'Error when running onesie request')
-          throw err
+          const handledError = err instanceof Error ? err : new Error('Unknown error', { cause: err })
+          request.log.error(handledError, 'Error when running onesie request')
+          if (handledError?.message?.includes('No matching formats found')) {
+            reply.status(404)
+            return reply.send({
+              description: 'No matching formats found'
+            })
+          } else {
+            reply.status(500)
+            return reply.send({
+              description: 'Error extracting data from YouTube'
+            })
+          }
         }
       } else {
         try {
@@ -129,7 +140,10 @@ export default async function ytDlpRoute (fastify, _opts) {
           return responseData
         } catch (err) {
           fastify.log.error(new Error('Error while requesting yt-dlp endpoint data', { cause: err }))
-          return reply.internalServerError('Error while requesting yt-dlp endpoint data')
+          reply.status(500)
+          return reply.send({
+            description: 'Error while requesting yt-dlp endpoint'
+          })
         }
       }
     }
