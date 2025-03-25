@@ -13,7 +13,6 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         python_version: ['3.x']
-        node_version: ['lts/*']
 
     steps:
     - uses: actions/checkout@v4
@@ -41,9 +40,9 @@ jobs:
     - name: Verify protoc installation
       run: protoc --version
 
-    - name: Use Node.js ${{ matrix.node_version }}
+    - name: Use Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: ${{ matrix.node_version }}
+        node-version-file: package.json
     - run: npm i
     - run: npm test

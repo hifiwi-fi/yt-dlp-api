@@ -9,7 +9,6 @@ on:
         default: 'master'
 
 env:
-  node_version: lts/*
   python_version: '3.x'
   FORCE_COLOR: 1
 

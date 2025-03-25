@@ -59,7 +59,7 @@
     "url": "https://github.com/hifiwi-fi/yt-dlp-api.git"
   },
   "engines": {
-    "node": ">=20.18.1"
+    "node": "^22"
   },
   "scripts": {
     "postinstall": "run-s postinstall:*",

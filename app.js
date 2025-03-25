@@ -76,6 +76,7 @@ const PinoLevelToSeverityLookup = /** @type {const} */ ({
  * @type {AppOptions}
  */
 export const options = {
+  pluginTimeout: 30000,
   trustProxy: true,
   genReqId: function (/* req */) { return hid() },
   logger: {
