@@ -21,11 +21,17 @@ swap_size_mb = 1024
   FASTIFY_LOG_LEVEL = "info"
   FASTIFY_OPTIONS = "true"
 
+
+[metrics]
+  port = 9093 # TODO: make this consistent
+  path = "/metrics"
+
+
 [[services]]
   protocol = "tcp"
   internal_port = 5000
   processes = ["app"]
-  auto_stop_machines = true
+  auto_stop_machines = false
   auto_start_machines = true
   min_machines_running = 1
 
@@ -56,7 +62,3 @@ swap_size_mb = 1024
     method = "get"
     path = "/health"
     protocol = "http"
-
-[metrics]
-  port = 9093 # TODO: make this consistent
-  path = "/metrics"
