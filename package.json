@@ -8,7 +8,7 @@
     "url": "https://github.com/hifiwi-fi/yt-dlp-api/issues"
   },
   "dependencies": {
-    "npm-run-all2": "^7.0.0",
+    "npm-run-all2": "^8.0.1",
     "custompatch": "^1.1.4",
     "@bret/is-youtube-url": "^1.0.5",
     "@fastify/auth": "^5.0.1",
