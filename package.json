@@ -27,7 +27,7 @@
     "hyperid": "^3.1.1",
     "secure-json-parse": "^4.0.0",
     "undici": "^7.0.0",
-    "youtubei.js": "13.4.0"
+    "youtubei.js": "14.0.0"
   },
   "devDependencies": {
     "@bret/type-provider-json-schema-to-ts": "^5.0.0",
