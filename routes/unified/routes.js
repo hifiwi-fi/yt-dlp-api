@@ -67,7 +67,8 @@ export default async function ytDlpRoute (fastify, _opts) {
             parsedUrl.toString(),
             format,
             fastify.youtubei.innertube,
-            fastify.youtubei.tvConfig
+            fastify.youtubei.tvConfig,
+            true
           )
           return results
         } catch (err) {
