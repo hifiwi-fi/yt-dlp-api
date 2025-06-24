@@ -14,27 +14,30 @@ swap_size_mb = 1024
 
 [build]
   dockerfile = "Dockerfile"
+  [build.args]
+    NODE_ENV = "production"
 
 [env]
+  NODE_ENV = "production"
   PORT = "5000"
   FASTIFY_ADDRESS = "0.0.0.0"
   FASTIFY_LOG_LEVEL = "info"
   FASTIFY_OPTIONS = "true"
   METRICS = "true"
   FASTIFY_IMPORT = "./otel.js"
-
-
+  OTEL_SERVICE_NAME = "yt-dlp-api"
+  OTEL_SERVICE_VERSION = "1.0.0"
+  OTEL_RESOURCE_ATTRIBUTES = "deployment.environment=production"
 
 [metrics]
   port = 9093 # TODO: make this consistent
   path = "/metrics"
 
-
 [[services]]
   protocol = "tcp"
   internal_port = 5000
   processes = ["app"]
-  auto_stop_machines = false
+  auto_stop_machines = "off"
   auto_start_machines = true
   min_machines_running = 1
 

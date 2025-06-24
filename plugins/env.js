@@ -39,7 +39,19 @@ export const schema = /** @type {const} @satisfies {JSONSchema} */ ({
     TVCONFIG_REFRESH_MS: {
       type: 'number',
       default: 18_000_000
-    }
+    },
+    OTEL_SERVICE_NAME: {
+      type: 'string',
+      default: 'yt-dlp-api',
+    },
+    OTEL_SERVICE_VERSION: {
+      type: 'string',
+      default: '1.0.0',
+    },
+    OTEL_RESOURCE_ATTRIBUTES: {
+      type: 'string',
+      default: 'deployment.environment=development',
+    },
   },
 })
 
