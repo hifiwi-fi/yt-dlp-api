@@ -11,10 +11,6 @@ export const schema = /** @type {const} @satisfies {JSONSchema} */ ({
   type: 'object',
   required: [],
   properties: {
-    METRICS: {
-      type: 'integer', // 0 or 1
-      default: 1,
-    },
     ENV: {
       type: 'string',
       default: 'development',
