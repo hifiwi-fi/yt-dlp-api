@@ -20,6 +20,9 @@ swap_size_mb = 1024
   FASTIFY_ADDRESS = "0.0.0.0"
   FASTIFY_LOG_LEVEL = "info"
   FASTIFY_OPTIONS = "true"
+  METRICS = "true"
+  FASTIFY_IMPORT = "./otel.js"
+
 
 
 [metrics]
