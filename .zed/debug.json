@@ -1,0 +1,64 @@
+[
+  {
+    "label": "Debug yt-dlp-api (Port 5000)",
+    "adapter": "JavaScript",
+    "type": "pwa-node",
+    "request": "launch",
+    "program": "npm",
+    "args": [
+      "run",
+      "watch:fastify"
+    ],
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "console": "integratedTerminal",
+    "env": {
+      "NODE_ENV": "development",
+      "FORCE_COLOR": "1"
+    },
+    "skipFiles": [
+      "<node_internals>/**"
+    ],
+    "resolveSourceMapLocations": [
+      "${workspaceFolder}/**",
+      "!**/node_modules/**"
+    ]
+  },
+  {
+    "label": "Debug Both Servers (Fastify + Python)",
+    "adapter": "JavaScript",
+    "type": "pwa-node",
+    "request": "launch",
+    "program": "npm",
+    "args": [
+      "run",
+      "watch"
+    ],
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "console": "integratedTerminal",
+    "env": {
+      "NODE_ENV": "development",
+      "FORCE_COLOR": "1"
+    },
+    "skipFiles": [
+      "<node_internals>/**"
+    ],
+    "resolveSourceMapLocations": [
+      "${workspaceFolder}/**",
+      "!**/node_modules/**"
+    ]
+  },
+  {
+    "label": "Attach to Fastify Server Debug",
+    "adapter": "JavaScript",
+    "type": "pwa-node",
+    "request": "attach",
+    "port": 9229,
+    "skipFiles": [
+      "<node_internals>/**"
+    ],
+    "resolveSourceMapLocations": [
+      "${workspaceFolder}/**",
+      "!**/node_modules/**"
+    ]
+  }
+]
