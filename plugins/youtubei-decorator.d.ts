@@ -1,13 +1,13 @@
 import 'fastify'
-import Innertube from 'youtubei.js'
 import type { onesieFormatRequest } from '../lib/onesie/index.js'
-import type { TvConfig } from '../lib/onesie/index.js'
+import type { YouTubeTVClientConfig } from '../lib/onesie/tv-config.js'
+import type { InnertubeConfig } from '../lib/onesie/innertube-config.js'
 
 declare module 'fastify' {
   interface FastifyInstance {
     youtubei: {
-      innertube: Innertube,
-      tvConfig: TvConfig,
+      innertubeConfig: InnertubeConfig,
+      tvConfig: YouTubeTVClientConfig,
       onesieFormatRequest: typeof onesieFormatRequest
     },
   }

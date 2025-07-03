@@ -40,6 +40,10 @@ export const schema = /** @type {const} @satisfies {JSONSchema} */ ({
       type: 'number',
       default: 18_000_000
     },
+    INNERTUBE_REFRESH_MS: {
+      type: 'number',
+      default: 172_800_000 // 48 hours in milliseconds
+    },
     OTEL_SERVICE_NAME: {
       type: 'string',
       default: 'yt-dlp-api',
