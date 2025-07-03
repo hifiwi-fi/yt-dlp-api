@@ -66,7 +66,7 @@ export default async function ytDlpRoute (fastify, _opts) {
           const results = await fastify.youtubei.onesieFormatRequest(
             parsedUrl.toString(),
             format,
-            fastify.youtubei.innertube,
+            fastify.youtubei.innertubeConfig,
             fastify.youtubei.tvConfig,
             true
           )

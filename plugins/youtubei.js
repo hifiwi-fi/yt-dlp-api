@@ -1,11 +1,14 @@
 import fp from 'fastify-plugin'
-import Innertube, { UniversalCache } from 'youtubei.js'
 import { onesieFormatRequest } from '../lib/onesie/index.js'
 import { YouTubeTVClientConfig } from '../lib/onesie/tv-config.js'
+import { InnertubeConfig } from '../lib/onesie/innertube-config.js'
 
 export default fp(async function (fastify, _) {
   const youtubei = {
-    innertube: await Innertube.create({ cache: new UniversalCache(true) }),
+    innertubeConfig: new InnertubeConfig({
+      refreshMs: fastify.config.INNERTUBE_REFRESH_MS,
+      logger: fastify.log
+    }),
     tvConfig: new YouTubeTVClientConfig({
       refreshMs: fastify.config.TVCONFIG_REFRESH_MS,
       logger: fastify.log
