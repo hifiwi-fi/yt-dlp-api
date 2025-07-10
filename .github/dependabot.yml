@@ -7,10 +7,16 @@ updates:
     directory: "/ytdlp-server"
     schedule:
       interval: "daily"
+
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "daily"
+    groups:
+      opentelemetry:
+        patterns:
+          - "@opentelemetry/*"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
