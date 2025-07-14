@@ -1,5 +1,5 @@
 Brotli==1.1.0
-certifi==2025.7.9
+certifi==2025.7.14
 click==8.1.8
 Flask==3.1.1
 gunicorn==23.0.0
