@@ -1,12 +1,48 @@
 {
-  "extends": "@voxpelli/tsconfig/node20.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Official Bases Equivalent to Voxpelli Config",
+
+  "extends": [
+    "@tsconfig/node24/tsconfig.json",
+    "@tsconfig/strictest/tsconfig.json",
+    "@tsconfig/node-ts/tsconfig.json"
+  ],
+
   "compilerOptions": {
-    "noEmit": true,
-    "skipLibCheck": true
+    // Override @tsconfig/strictest's noImplicitReturns to match voxpelli's preference
+    // @tsconfig/strictest sets this to true, but voxpelli/base.json explicitly sets it to false
+    "noImplicitReturns": false,
+
+    // Core functionality settings from voxpelli/base.json that aren't in official bases
+    "noEmit": true,                     // From voxpelli/base.json - for type checking only
+    "allowJs": true,                    // From voxpelli/base.json - to check JS files
+    "resolveJsonModule": true,          // From voxpelli/base.json - to import JSON files
+    "types": ["node"],                  // From voxpelli/base.json - explicit Node.js types
+
+    // Declaration file cleanup settings from voxpelli/base.json
+    "removeComments": true,             // From voxpelli/base.json - clean declarations
+    "stripInternal": true,              // From voxpelli/base.json - clean declarations
+
+    // Module interop settings from voxpelli/base.json not covered by official bases
+    "allowSyntheticDefaultImports": true,  // From voxpelli/base.json (redundant with esModuleInterop but explicit)
+
+    // Additional strict checking from voxpelli/base.json not in @tsconfig/strictest
+    "noUncheckedSideEffectImports": true,  // From voxpelli/base.json - voxpelli's additional check
+    "forceConsistentCasingInFileNames": true, // From voxpelli/base.json - file system consistency
+
+    // Modern TS 5.8+ features from user's original config (not in @tsconfig/node-ts)
+    "allowImportingTsExtensions": true  // User addition for .ts imports with noEmit
+
+    // Note: The following are provided by @tsconfig/node-ts:
+    // - rewriteRelativeImportExtensions: true
+    // - erasableSyntaxOnly: true
+    // - verbatimModuleSyntax: true
   },
+
   "include": [
     "./**/*"
   ],
+
   "exclude": [
     "node_modules",
     "public",
