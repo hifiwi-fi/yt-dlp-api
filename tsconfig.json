@@ -3,7 +3,7 @@
   "display": "Official Bases Equivalent to Voxpelli Config",
 
   "extends": [
-    "@tsconfig/node20/tsconfig.json",
+    "@tsconfig/node24/tsconfig.json",
     "@tsconfig/strictest/tsconfig.json",
     "@tsconfig/node-ts/tsconfig.json"
   ],

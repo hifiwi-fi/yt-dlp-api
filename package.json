@@ -37,7 +37,7 @@
   "devDependencies": {
     "@bret/type-provider-json-schema-to-ts": "^5.0.0",
     "@tsconfig/node-ts": "^23.6.1",
-    "@tsconfig/node20": "^20.1.6",
+    "@tsconfig/node24": "^24.0.1",
     "@tsconfig/strictest": "^2.0.5",
     "@types/jsdom": "^21.1.7",
     "@types/node": "^24.0.0",
