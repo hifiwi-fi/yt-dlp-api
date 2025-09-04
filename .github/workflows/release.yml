@@ -28,7 +28,7 @@ jobs:
       with:
         node-version-file: package.json
         registry-url: 'https://registry.npmjs.org'
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       with:
         python-version: ${{ env.python_version }}
         architecture: 'x64'
