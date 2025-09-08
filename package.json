@@ -89,7 +89,7 @@
     "print-routes": "fastify print-routes --import ./otel.js app.js",
     "print-plugins": "fastify print-plugins --import ./otel.js app.js",
     "start": "npm run watch",
-    "deploy": "fly deploy",
+    "deploy": "fly deploy --buildkit",
     "knip": "knip --dependencies"
   }
 }
