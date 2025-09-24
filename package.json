@@ -17,6 +17,8 @@
     "@fastify/env": "^5.0.1",
     "@fastify/otel": "^0.9.1",
     "@fastify/sensible": "^6.0.1",
+    "@fastify/redis": "^7.0.1",
+    "abstract-cache-redis": "^2.0.0",
     "@opentelemetry/exporter-prometheus": "^0.205.0",
     "@opentelemetry/host-metrics": "^0.36.0",
     "@opentelemetry/instrumentation-http": "^0.205.0",
@@ -70,7 +72,7 @@
   },
   "scripts": {
     "postinstall": "run-s postinstall:*",
-    "postinstall-skip:custompatch": "custompatch",
+    "postinstall:custompatch": "custompatch",
     "postinstall:venv": "cd ytdlp-server/ && python3 -m venv venv && . venv/bin/activate && pip3 install -r requirements.txt",
     "clean": "rm -rf node_modules && rm -rf ytdlp-server/venv",
     "prepublishOnly": "git push --follow-tags && gh-release -y",
@@ -89,6 +91,7 @@
     "print-routes": "fastify print-routes --import ./otel.js app.js",
     "print-plugins": "fastify print-plugins --import ./otel.js app.js",
     "start": "npm run watch",
+    "roll-region": "./scripts/roll-region.sh",
     "deploy": "fly deploy --buildkit",
     "knip": "knip --dependencies"
   }

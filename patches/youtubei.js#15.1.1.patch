@@ -1,0 +1,24 @@
+Index: /youtubei.js/dist/src/core/Player.js
+===================================================================
+--- /youtubei.js/dist/src/core/Player.js
++++ /youtubei.js/dist/src/core/Player.js
+@@ -24,9 +24,10 @@
+             const res = await fetch(url);
+             if (!res.ok)
+                 throw new PlayerError(`Failed to get player id: ${res.status} (${res.statusText})`);
+             const js = await res.text();
+-            player_id = getStringBetweenStrings(js, 'player\\/', '\\/');
++            // player_id = getStringBetweenStrings(js, 'player\\/', '\\/');
++            player_id = "0004de42";
+         }
+         Log.info(TAG, `Using player id (${player_id}). Checking for cached players..`);
+         if (!player_id)
+             throw new PlayerError('Failed to get player id');
+@@ -236,5 +237,5 @@
+     static get LIBRARY_VERSION() {
+         return 14;
+     }
+ }
+-//# sourceMappingURL=Player.js.map
+\ No newline at end of file
++//# sourceMappingURL=Player.js.map

@@ -22,7 +22,9 @@ const AppPath = path.join(__dirname, '..', 'app.js')
 // Fill in this config with all the configurations
 // needed for testing the application
 function config () {
-  return {}
+  return {
+    skipOverride: true, // Register our application with fastify-plugin
+  }
 }
 
 // automatically build and tear down our instance
@@ -32,7 +34,7 @@ function config () {
  */
 async function build (t) {
   // you can set all the options supported by the fastify CLI command
-  const argv = [AppPath]
+  const argv = ['--options', AppPath]
 
   // fastify-plugin ensures that all decorators
   // are exposed for testing purposes, this is
@@ -40,7 +42,13 @@ async function build (t) {
   const app = await helper.build(argv, config())
 
   // tear down our app after we are done
-  t.after(() => app.close())
+  t.after(async () => {
+    // console.log('Closing app...')
+    await app.close()
+    // console.log('App closed...')
+    // Add a small delay to ensure resources are released
+    await new Promise(resolve => setTimeout(resolve, 100))
+  })
 
   return app
 }

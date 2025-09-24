@@ -56,6 +56,10 @@ export const schema = /** @type {const} @satisfies {JSONSchema} */ ({
       type: 'string',
       default: 'deployment.environment=development',
     },
+    REDIS_CACHE_URL: {
+      type: 'string',
+      default: 'redis://localhost:6379/1',
+    },
   },
 })
 
