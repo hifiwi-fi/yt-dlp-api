@@ -38,12 +38,11 @@ test('youtubei decorator onesieFormatRequest test', async (t) => {
   const app = await build(t)
 
   // Call the onesieFormatRequest method off the youtubei decorator
-  const result = await app.youtubei.onesieFormatRequest(
-    videoUrl,
-    'video',
-    app.youtubei.innertubeConfig,
-    app.youtubei.tvConfig
-  )
+  const result = await app.runTask({
+    url: videoUrl,
+    format: 'video',
+    returnRedirectUrl: true
+  })
 
   console.log({ url: result.url })
 
