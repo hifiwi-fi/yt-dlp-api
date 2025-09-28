@@ -63,6 +63,7 @@ export default async function ytDlpRoute (fastify, _opts) {
 
       if (isYouTubeUrl(parsedUrl)) {
         try {
+          /** @type { OnesieFormatResults } */
           const results = await fastify.runTask({
             url: parsedUrl.toString(),
             format,

@@ -28,7 +28,7 @@ export default fp(async function onesiePool (fastify, _opts) {
     workerData.playerId = fastify.config.YOUTUBE_PLAYER_ID
   }
 
-  fastify.register(import('@piscina/fastify'), {
+  await fastify.register(import('@piscina/fastify'), {
     filename: workerPath,
     workerData,
     // Pool tuning for single worker instance
