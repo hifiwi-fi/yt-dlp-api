@@ -18,6 +18,11 @@ export default fp(async function onesiePool (fastify, _opts) {
     tvConfigRefreshMs: fastify.config.TVCONFIG_REFRESH_MS
   }
 
+  // Only add playerId if it's explicitly provided and not null/undefined
+  if (fastify.config.YOUTUBE_PLAYER_ID != null) {
+    workerData.playerId = fastify.config.YOUTUBE_PLAYER_ID
+  }
+
   fastify.register(import('@piscina/fastify'), {
     filename: workerPath,
     workerData,
