@@ -14,6 +14,11 @@ export default fp(async function onesiePool (fastify, _opts) {
    */
   const workerData = {
     redisUrl: fastify.config.REDIS_CACHE_URL,
+    redisOptions: {
+      family: 6,
+      connectTimeout: 500,
+      maxRetriesPerRequest: 1,
+    },
     innertubeRefreshMs: fastify.config.INNERTUBE_REFRESH_MS,
     tvConfigRefreshMs: fastify.config.TVCONFIG_REFRESH_MS
   }
