@@ -1,14 +1,9 @@
 FROM alpine:3.21
 
-RUN apk add --no-cache python3 py3-pip nodejs npm git tmux go protobuf
+RUN apk add --no-cache python3 py3-pip nodejs npm git protobuf
 
 WORKDIR /usr/src/app
 COPY --link . .
-
-ENV GOPATH="$HOME/go"
-ENV PATH="$PATH:$GOPATH/bin"
-
-RUN go install github.com/DarthSim/overmind/v2@latest
 
 # Set up Python Deps
 WORKDIR /usr/src/app/ytdlp-server
@@ -26,4 +21,4 @@ RUN npm i --omit=dev
 
 EXPOSE 5000
 
-CMD ["overmind", "start"]
+CMD ["./node_modules/.bin/fastify", "start", "app.js"]
