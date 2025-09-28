@@ -24,7 +24,7 @@ echo "Starting region rotation for $APP_NAME..."
 OLD_REGION=$(flyctl regions list | grep 'Regions \[app\]:' | awk '{print $3}')
 
 # Ordered list of regions
-REGIONS=("lax" "sjc" "sea" "dfw" "ord" "ewr" "iad")
+REGIONS=("lax" "sjc" "dfw" "ord" "ewr" "iad")
 
 # Check if REGIONS is empty
 if [ ${#REGIONS[@]} -eq 0 ]; then
