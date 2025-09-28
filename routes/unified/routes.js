@@ -63,13 +63,11 @@ export default async function ytDlpRoute (fastify, _opts) {
 
       if (isYouTubeUrl(parsedUrl)) {
         try {
-          const results = await fastify.youtubei.onesieFormatRequest(
-            parsedUrl.toString(),
+          const results = await fastify.runTask({
+            url: parsedUrl.toString(),
             format,
-            fastify.youtubei.innertubeConfig,
-            fastify.youtubei.tvConfig,
-            true
-          )
+            returnRedirectUrl: true
+          })
           return results
         } catch (err) {
           const handledError = err instanceof Error ? err : new Error('Unknown error', { cause: err })
