@@ -3,6 +3,7 @@ import { isYouTubeUrl } from '@bret/is-youtube-url'
 
 /**
 * @import { FastifyPluginAsyncJsonSchemaToTs } from '@bret/type-provider-json-schema-to-ts'
+* @import { OnesieFormatResults } from '../../lib/onesie/index.js'
 **/
 
 /**
