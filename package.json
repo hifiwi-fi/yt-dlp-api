@@ -34,7 +34,7 @@
     "fastify-plugin": "^5.0.1",
     "googlevideo": "bcomnes/googlevideo#git",
     "hyperid": "^3.1.1",
-    "ioredis": "^5.0.0",
+    "ioredis": "^5.8.1",
     "npm-run-all2": "^8.0.1",
     "pino": "^10.0.0",
     "piscina": "^5.1.3",
