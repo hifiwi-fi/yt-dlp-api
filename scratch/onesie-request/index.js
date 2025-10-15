@@ -5,7 +5,9 @@ import Innertube from 'youtubei.js'
 
 const tvConfigInstance = new YouTubeTVClientConfig()
 
-const innertube = await Innertube.create()
+const innertube = await Innertube.create({
+  retrieve_innertube_config: false
+})
 
 const videoUrl = 'https://www.youtube.com/watch?v=JAs6WyK-Kr0'
 

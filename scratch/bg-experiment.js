@@ -5,7 +5,7 @@ import { fetch } from 'undici'
 
 import { BG } from 'bgutils-js'
 
-let innertube = await Innertube.create({ retrieve_player: false })
+let innertube = await Innertube.create({ retrieve_player: false, retrieve_innertube_config: false  })
 
 const requestKey = 'O43z0dpjhgX20SCx4KAo'
 const visitorData = innertube.session.context.client.visitorData
@@ -58,11 +58,12 @@ innertube = await Innertube.create({
   visitor_data: visitorData,
   cache: new UniversalCache(),
   generate_session_locally: true,
+  retrieve_innertube_config: false
 })
 
 const basicInfo = await innertube.getBasicInfo('Itlu7HAjmUo')
 console.dir({ basicInfo }, { depth: 999 })
-const audioStreamingURL = basicInfo.chooseFormat({ quality: 'best', type: 'audio' }).decipher(innertube.session.player)
+const audioStreamingURL = await basicInfo.chooseFormat({ quality: 'best', type: 'audio' }).decipher(innertube.session.player)
 
 console.info('Streaming URL:', audioStreamingURL)
 
