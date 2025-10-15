@@ -1,14 +1,16 @@
 import AutoLoad from '@fastify/autoload'
 import { join } from 'node:path'
-import hyperid from 'hyperid'
+import { envSchema } from './config/env-schema.js'
+
+// Re-exporting the options object
+export { options } from './config/server-options.js'
 
 /**
- * @import { FastifyPluginAsync, FastifyServerOptions } from 'fastify'
- * @import { AutoloadPluginOptions } from '@fastify/autoload'
+ * @import { FastifyPluginAsync } from 'fastify'
+ * @import { AppOptions } from './config/server-options.js'
  */
 
 const __dirname = import.meta.dirname
-const hid = hyperid()
 
 /**
  * @type {FastifyPluginAsync<AppOptions>}
@@ -18,9 +20,13 @@ export default async function App (fastify, opts) {
   const skipPattern = /.*.no-load(\.js|\.cjs|\.mjs)$/i
   const ignorePattern = new RegExp(`${testPattern.source}|${skipPattern.source}`)
 
+  // Load the env schema first thing
+  fastify.addSchema(envSchema)
+
   // Load any files in the routes folder ending with .schema.js
   // Use these files to register schemas in the fastify schema store before
   // any routes try to reference them.
+  // Use fp to ensure load order correctness.
   fastify.register(AutoLoad, {
     dir: join(__dirname, 'routes'),
     matchFilter: /^.*[a-zA-Z0-9_-]+\.schema(\.js|\.cjs|\.mjs)$/i,
@@ -54,48 +60,4 @@ export default async function App (fastify, opts) {
     routeParams: true,
     options: { ...opts },
   })
-}
-
-const PinoLevelToSeverityLookup = /** @type {const} */ ({
-  trace: 'DEBUG',
-  debug: 'DEBUG',
-  info: 'INFO',
-  warn: 'WARNING',
-  error: 'ERROR',
-  fatal: 'CRITICAL',
-})
-
-/**
- * @typedef { {} &
- *   Partial<FastifyServerOptions> &
- *   Partial<AutoloadPluginOptions>
- * } AppOptions
- */
-
-/**
- * @type {AppOptions}
- */
-export const options = {
-  pluginTimeout: 30000,
-  trustProxy: true,
-  genReqId: function (/* req */) { return hid() },
-  logger: {
-    mixin () {
-      return {
-        service: 'yt-dlp-api',
-      }
-    },
-    messageKey: 'message',
-    formatters: {
-      level (label, number) {
-        return {
-          level: PinoLevelToSeverityLookup[
-            /** @type {keyof typeof PinoLevelToSeverityLookup} */
-            (label)
-          ] || PinoLevelToSeverityLookup.info,
-          levelN: number,
-        }
-      },
-    },
-  },
 }
