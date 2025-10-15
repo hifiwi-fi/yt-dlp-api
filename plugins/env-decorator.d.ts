@@ -1,10 +1,10 @@
 import 'fastify'
-import type { SchemaType } from './env.js'
+import type { DotEnvSchemaType } from '../config/env-schema.js'
 import type { PackageJson } from 'type-fest'
 
 declare module 'fastify' {
   interface FastifyInstance {
-    config: SchemaType,
+    config: DotEnvSchemaType,
     pkg: PackageJson
   }
 }
