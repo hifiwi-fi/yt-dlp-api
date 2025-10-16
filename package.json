@@ -32,7 +32,7 @@
     "fastify-healthcheck": "^5.0.0",
     "fastify-piscina": "^5.0.0",
     "fastify-plugin": "^5.0.1",
-    "googlevideo": "^4.0.4",
+    "googlevideo": "4.0.4",
     "hyperid": "^3.1.1",
     "ioredis": "^5.8.1",
     "npm-run-all2": "^8.0.1",
