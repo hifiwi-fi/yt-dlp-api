@@ -2,7 +2,7 @@ import { request as undiciRequest } from 'undici'
 import { isYouTubeUrl } from '@bret/is-youtube-url'
 
 /**
-* @import { FastifyPluginAsyncJsonSchemaToTs } from '@bret/type-provider-json-schema-to-ts'
+* @import { FastifyPluginAsyncJsonSchemaToTs } from '@fastify/type-provider-json-schema-to-ts'
 * @import { OnesieFormatResults } from '../../lib/onesie/index.js'
 **/
 
