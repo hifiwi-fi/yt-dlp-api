@@ -88,7 +88,7 @@
     "test:neostandard": "eslint .",
     "test:tsc": "tsc",
     "test:installed-check": "installed-check --ignore-dev",
-    "test:node-test": "node --test",
+    "test:node-test": "node --test --test-concurrency=1",
     "watch": "FORCE_COLOR=1 run-p -n -l watch:*",
     "watch:fastify": "fastify start -w --ignore-watch='node_modules .git' -l info -P -p 5000 --options --address localhost --import ./otel.js app.js",
     "python-dev": "cd ytdlp-server/ && . venv/bin/activate && flask --app yt_dlp_api --debug run --port 5001",

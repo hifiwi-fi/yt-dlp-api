@@ -6,7 +6,7 @@ import { resolve, join } from 'path'
 
 const __dirname = import.meta.dirname
 
-export default fp(async function onesiePool (fastify, _opts) {
+export default fp(async function onesiePool (fastify, opts) {
   const workerPath = resolve(join(__dirname, '..', 'lib', 'onesie-worker.js'))
 
   /**
@@ -40,6 +40,16 @@ export default fp(async function onesiePool (fastify, _opts) {
     concurrentTasksPerWorker: 1,
     // Queue configuration
     maxQueue: 'auto'
+  })
+
+  // Listen for log messages from workers
+  fastify.piscina.on('message', (message) => {
+    // Check if this is a log message
+    if (message && message.type === 'log') {
+      const { level, msg, data } = message
+      // Use the parent's logger with the worker's log data
+      fastify.log[level]({ ...data, worker: true }, msg)
+    }
   })
 }, {
   name: 'onesie-pool',
