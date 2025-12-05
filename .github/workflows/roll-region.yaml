@@ -1,10 +1,10 @@
 name: Rotate Fly.io App Region
 
 on:
-  schedule:
-    # Runs every 2 hours
-    - cron: '0 */2 * * *'
   workflow_dispatch: # Allows manual triggering
+  #schedule:
+  # Runs every 2 hours
+  #- cron: '0 */2 * * *'
 
 env:
   node_version: 19
