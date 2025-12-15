@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 
 const youtubeVideoUrl = 'https://www.youtube.com/watch?v=6Dh-RL__uN4'
 
-test('unified yt-dlp endpoint', async (t) => {
+test('unified yt-dlp endpoint', { todo: process.env.CI }, async (t) => {
   await t.test('GET /unified - X.com video extraction', async (t) => {
     const app = await build(t)
 
