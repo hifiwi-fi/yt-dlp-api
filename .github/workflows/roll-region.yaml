@@ -7,7 +7,6 @@ on:
   #- cron: '0 */2 * * *'
 
 env:
-  node_version: 19
   FORCE_COLOR: 1
 
 concurrency: # prevent concurrent releases
@@ -20,11 +19,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
         with:
-          node-version: ${{ env.node_version }}
+          version: 10
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: package.json
+          cache: "pnpm"
+      - run: pnpm install
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - name: Switch to a Different Region and Scale
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-        run: npm run roll-region
+        run: pnpm run roll-region

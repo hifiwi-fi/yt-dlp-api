@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python_version: ['3.x']
+        python_version: ["3.x"]
 
     services:
       redis:
@@ -26,34 +26,39 @@ jobs:
           - 6379:6379
 
     steps:
-    - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
 
-    - uses: actions/setup-python@v6
-      with:
-        python-version: ${{ matrix.python_version }}
-        architecture: 'x64'
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python_version }}
+          architecture: "x64"
 
-    - name: Install Flake8
-      run: |
-        pip install flake8
-      working-directory: ytdlp-server
+      - name: Install Flake8
+        run: |
+          pip install flake8
+        working-directory: ytdlp-server
 
-    - name: Run Flake8
-      run: |
-        flake8 . --max-line-length=120
-      working-directory: ytdlp-server
+      - name: Run Flake8
+        run: |
+          flake8 . --max-line-length=120
+        working-directory: ytdlp-server
 
-    - name: Install Protoc using apt-get
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y protobuf-compiler
+      - name: Install Protoc using apt-get
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
 
-    - name: Verify protoc installation
-      run: protoc --version
+      - name: Verify protoc installation
+        run: protoc --version
 
-    - name: Use Node.js
-      uses: actions/setup-node@v6
-      with:
-        node-version-file: package.json
-    - run: npm i
-    - run: npm test
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: package.json
+          cache: "pnpm"
+      - run: pnpm install
+      - run: pnpm test

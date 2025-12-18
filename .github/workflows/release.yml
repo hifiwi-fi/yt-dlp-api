@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       newversion:
-        description: 'npm version (YYYY.MM.DD)'
+        description: "npm version (YYYY.MM.DD)"
         required: false
 
 env:
   FORCE_COLOR: 1
   NPM_CONFIG_COLOR: always
-  python_version: '3.x'
+  python_version: "3.x"
 
 concurrency:
   group: npm-bump
@@ -32,47 +32,52 @@ jobs:
           - 6379:6379
 
     steps:
-    - uses: actions/checkout@v6
-      with:
-        fetch-depth: 0
-    - name: Use Node.js
-      uses: actions/setup-node@v6
-      with:
-        node-version-file: package.json
-        registry-url: 'https://registry.npmjs.org'
-    - uses: actions/setup-python@v6
-      with:
-        python-version: ${{ env.python_version }}
-        architecture: 'x64'
-    - uses: superfly/flyctl-actions/setup-flyctl@master
-    - name: Install Protoc using apt-get
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y protobuf-compiler
-    - name: Verify protoc installation
-      run: protoc --version
-    - run: npm i
-    - name: Archive lockfile
-      uses: actions/upload-artifact@v6
-      with:
-        name: package-lock.json
-        path: package-lock.json
-    - run: npm test
-    - name: Set NEW_VERSION
-      run: |
-        if [ -z "${{ github.event.inputs.newversion }}" ]; then
-          echo "NEW_VERSION=$(date -d "${{ github.event.repository.pushed_at }}" +%Y.%m.%d)" >> $GITHUB_ENV
-        else
-          echo "NEW_VERSION=${{ github.event.inputs.newversion }}" >> $GITHUB_ENV
-        fi
-        echo $NEW_VERSION
-    - uses: bcomnes/npm-bump@v2
-      with:
-        git_email: bcomnes@gmail.com
-        git_username: ${{ github.actor }}
-        newversion: ${{ env.NEW_VERSION }}
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_cmd: npm run release
-    - run: flyctl deploy --remote-only --buildkit
-      env:
-        FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: package.json
+          registry-url: "https://registry.npmjs.org"
+          cache: "pnpm"
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.python_version }}
+          architecture: "x64"
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Install Protoc using apt-get
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+      - name: Verify protoc installation
+        run: protoc --version
+      - run: pnpm install
+      - name: Archive lockfile
+        uses: actions/upload-artifact@v6
+        with:
+          name: pnpm-lock.yaml
+          path: pnpm-lock.yaml
+      - run: pnpm test
+      - name: Set NEW_VERSION
+        run: |
+          if [ -z "${{ github.event.inputs.newversion }}" ]; then
+            echo "NEW_VERSION=$(date -d "${{ github.event.repository.pushed_at }}" +%Y.%m.%d)" >> $GITHUB_ENV
+          else
+            echo "NEW_VERSION=${{ github.event.inputs.newversion }}" >> $GITHUB_ENV
+          fi
+          echo $NEW_VERSION
+      - uses: bcomnes/npm-bump@v2
+        with:
+          git_email: bcomnes@gmail.com
+          git_username: ${{ github.actor }}
+          newversion: ${{ env.NEW_VERSION }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_cmd: pnpm run release
+      - run: flyctl deploy --remote-only --buildkit
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
