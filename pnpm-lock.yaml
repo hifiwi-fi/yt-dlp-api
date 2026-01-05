@@ -24,8 +24,8 @@ importers:
         specifier: ^4.0.1
         version: 4.0.2
       '@fastify/compress':
-        specifier: ^8.0.1
-        version: 8.3.0
+        specifier: ^8.3.1
+        version: 8.3.1
       '@fastify/env':
         specifier: ^5.0.1
         version: 5.0.3
@@ -234,8 +234,8 @@ packages:
   '@fastify/circuit-breaker@4.0.2':
     resolution: {integrity: sha512-e7dHs0E86t9SzrxQSclgWNgAbRpE6sTpmjOpxZ064oG45y755iLq5zox7A8tXOvGKYAaY2tle21AB5hW9L7vCg==}
 
-  '@fastify/compress@8.3.0':
-    resolution: {integrity: sha512-zYp6SCa7nJMxAse8+TXWNF0l0xV9K9GeMFwdr0aESAKfCEGo7N96b5vjFDFEz/pg8eyo1Am1B249UX79mS3x9A==}
+  '@fastify/compress@8.3.1':
+    resolution: {integrity: sha512-BUpItLr6MUX9e9ukg5Y6xekyA/7pBFG8QWtFCrUDm9ctoBc3R2/nA16yOaOWtVoccpXGjdDEYA/MxAb5+8cxag==}
 
   '@fastify/deepmerge@3.1.0':
     resolution: {integrity: sha512-lCVONBQINyNhM6LLezB6+2afusgEYR4G8xenMsfe+AT+iZ7Ca6upM5Ha8UkZuYSnuMw3GWl/BiPXnLMi/gSxuQ==}
@@ -3755,7 +3755,7 @@ snapshots:
       fastify-plugin: 5.1.0
       toad-cache: 3.7.0
 
-  '@fastify/compress@8.3.0':
+  '@fastify/compress@8.3.1':
     dependencies:
       '@fastify/accept-negotiator': 2.0.1
       fastify-plugin: 5.1.0
