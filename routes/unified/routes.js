@@ -40,7 +40,7 @@ export default async function ytDlpRoute (fastify, _opts) {
               channel_url: { type: 'string', format: 'uri', nullable: true },
               thumbnail: { type: 'string', format: 'uri', nullable: true },
               live_status: { type: 'string', nullable: true },
-              release_timestamp: { type: 'number', nullable: true }
+              release_timestamp: { type: 'number', nullable: true } // Unix timestamp in seconds (matching yt-dlp format)
             },
             oneOf: [
               { required: ['url'] },
