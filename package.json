@@ -45,7 +45,7 @@
     "hyperid": "^3.1.1",
     "ioredis": "^5.9.2",
     "npm-run-all2": "^8.0.1",
-    "pino": "^10.3.0",
+    "pino": "^10.3.1",
     "piscina": "^5.1.4",
     "secure-json-parse": "^4.1.0",
     "undici": "^7.20.0",
