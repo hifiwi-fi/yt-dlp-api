@@ -43,8 +43,8 @@ export default async function ytDlpRoute (fastify, _opts) {
               release_timestamp: { type: 'number', nullable: true } // Unix timestamp in seconds (matching yt-dlp format)
             },
             oneOf: [
-              { required: ['url'] },
-              { required: ['live_status', 'release_timestamp'] },
+              { type: 'object', required: ['url'] },
+              { type: 'object', required: ['live_status', 'release_timestamp'] },
             ],
             additionalProperties: false
           },
