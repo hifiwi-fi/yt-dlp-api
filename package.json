@@ -56,7 +56,7 @@
     "@tsconfig/node-ts": "^23.6.4",
     "@tsconfig/node24": "^24.0.4",
     "@tsconfig/strictest": "^2.0.7",
-    "@types/jsdom": "^27.0.0",
+    "@types/jsdom": "^28.0.0",
     "@types/node": "^25.3.0",
     "auto-changelog": "^2.0.0",
     "eslint": "^9.39.2",
