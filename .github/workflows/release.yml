@@ -58,7 +58,7 @@ jobs:
         run: protoc --version
       - run: pnpm install
       - name: Archive lockfile
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: pnpm-lock.yaml
           path: pnpm-lock.yaml
