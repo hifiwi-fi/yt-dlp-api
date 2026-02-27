@@ -62,6 +62,7 @@ jobs:
         with:
           name: pnpm-lock.yaml
           path: pnpm-lock.yaml
+          archive: false
       - run: pnpm test
       - name: Set NEW_VERSION
         run: |
