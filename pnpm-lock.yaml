@@ -118,7 +118,7 @@ importers:
         specifier: ^28.0.0
         version: 28.0.0
       '@types/node':
-        specifier: ^25.3.3
+        specifier: ^25.4.0
         version: 25.5.0
       auto-changelog:
         specifier: ^2.0.0
