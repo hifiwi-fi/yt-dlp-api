@@ -53,8 +53,7 @@ export const envSchema = /** @type {const} @satisfies {JSONSchema} */ ({
     },
     YOUTUBE_PLAYER_ID: {
       type: 'string',
-      // TODO: unset this when not needed any longer
-      // default: '0004de42'
+      default: '0004de42'
     },
     OTEL_SERVICE_NAME: {
       type: 'string',
