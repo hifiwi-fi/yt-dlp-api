@@ -17,7 +17,7 @@ export const envSchema = /** @type {const} @satisfies {JSONSchema} */ ({
     HOST: {
       // Hostname and port (if needed)
       type: 'string',
-      default: 'localhost:5000',
+      default: 'localhost:3010',
     },
     TRANSPORT: {
       enum: ['http', 'https'],
@@ -33,7 +33,7 @@ export const envSchema = /** @type {const} @satisfies {JSONSchema} */ ({
     },
     YTDLPAPI_HOST: {
       type: 'string',
-      default: '127.0.0.1:5001'
+      default: '127.0.0.1:3011'
     },
     YTDLPAPI_USER: {
       type: 'string',
@@ -53,7 +53,13 @@ export const envSchema = /** @type {const} @satisfies {JSONSchema} */ ({
     },
     YOUTUBE_PLAYER_ID: {
       type: 'string',
-      default: '0004de42'
+      default: '6c5cb4f4'
+      // 6c5cb4f4
+      // 56211dc2
+      // 99f55c01
+      // ecc3e9a7
+      // 05540cb0
+      // 9f4cc5e4
     },
     OTEL_SERVICE_NAME: {
       type: 'string',

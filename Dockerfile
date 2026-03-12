@@ -25,6 +25,6 @@ RUN pnpm install --frozen-lockfile --prod
 # Copy application code
 COPY . .
 
-EXPOSE 5000
+EXPOSE 3010
 
 CMD ["./node_modules/.bin/fastify", "start", "app.js"]

@@ -40,7 +40,9 @@ export default fp(async function (fastify, _opts) {
       ...process.env,
       PYTHONUNBUFFERED: '1',
       VIRTUAL_ENV: venvPath,
-      PATH: `${venvBinPath}:${process.env['PATH']}`
+      PATH: `${venvBinPath}:${process.env['PATH']}`,
+      // Fix macOS fork() crash when Objective-C runtime is in use during fork
+      OBJC_DISABLE_INITIALIZE_FORK_SAFETY: 'YES'
     }
 
     // Spawn gunicorn process

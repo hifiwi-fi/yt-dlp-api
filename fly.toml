@@ -19,7 +19,7 @@ swap_size_mb = 1024
 
 [env]
   NODE_ENV = "production"
-  PORT = "5000"
+  PORT = "3010"
   FASTIFY_ADDRESS = "0.0.0.0"
   FASTIFY_LOG_LEVEL = "info"
   FASTIFY_OPTIONS = "true"
@@ -36,7 +36,7 @@ swap_size_mb = 1024
 
 [[services]]
   protocol = "tcp"
-  internal_port = 5000
+  internal_port = 3010
   processes = ["app"]
   auto_stop_machines = "off"
   auto_start_machines = false
