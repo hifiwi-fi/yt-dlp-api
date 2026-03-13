@@ -54,6 +54,7 @@ export const envSchema = /** @type {const} @satisfies {JSONSchema} */ ({
     YOUTUBE_PLAYER_ID: {
       type: 'string',
       default: '6c5cb4f4'
+      // 487b9fc1
       // 6c5cb4f4
       // 56211dc2
       // 99f55c01

@@ -59,6 +59,14 @@ def authd():
 
 @app.route('/info', methods=['GET'])
 def video_info():
+    """
+    Full media extraction for non-YouTube URLs. Resolves the actual streamable media URL
+    for the requested format. This is the slow path — used only at playback time via the
+    podcast feed redirect, not during episode creation.
+
+    For YouTube, the Node.js layer handles this via the Onesie protocol (encrypted tunnel
+    to YouTube's initplayback endpoint) to work around YouTube's server-side restrictions.
+    """
 
     format_opts = request.args.get('format')
     if format_opts is None:
@@ -69,13 +77,14 @@ def video_info():
         abort(400, 'url querystring required')
 
     ydl_opts = {
-        'ignore_no_formats_error': True,
-        'format': format_opts,
-        'noplaylist': True
+        'ignore_no_formats_error': True,  # return partial info even if no downloadable formats found
+        'format': format_opts,            # e.g. 'bestaudio' or 'bestvideo' — selects which stream URL to return
+        'noplaylist': True                # treat URL as a single video, not a playlist
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
+            # process=True (default): full format resolution, returns signed media URL in info['url']
             info = ydl.extract_info(url, download=False)
             return jsonify(ydl.sanitize_info(info))
         except Exception as e:

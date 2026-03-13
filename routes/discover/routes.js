@@ -4,15 +4,15 @@ import { ytDlpFormats } from '../yt-dlp-formats.js'
 
 /**
 * @import { FastifyPluginAsyncJsonSchemaToTs } from '@fastify/type-provider-json-schema-to-ts'
-* @import { OnesieFormatResults } from '../../lib/onesie/index.js'
+* @import { BasicInfoMetadataResults } from '../../lib/onesie/index.js'
 **/
 
 /**
  * @typedef {{
- *   url?: string | null,
  *   filesize_approx?: number | null,
  *   duration?: number | null,
  *   channel?: string | null,
+ *   uploader?: string | null,
  *   title?: string | null,
  *   ext?: string | null,
  *   _type?: string | null,
@@ -22,13 +22,13 @@ import { ytDlpFormats } from '../yt-dlp-formats.js'
  *   thumbnail?: string | null,
  *   live_status?: string | null,
  *   release_timestamp?: number | null,
- * }} YtDlpInfoBody
+ * }} YtDlpDiscoverBody
  */
 
 /**
  * @type {FastifyPluginAsyncJsonSchemaToTs}
 */
-export default async function ytDlpRoute (fastify, _opts) {
+export default async function discoverRoute (fastify, _opts) {
   fastify.get(
     '/',
     {
@@ -47,7 +47,6 @@ export default async function ytDlpRoute (fastify, _opts) {
           200: {
             type: 'object',
             properties: {
-              url: { type: 'string', format: 'uri' },
               filesize_approx: { type: 'number', nullable: true },
               duration: { type: 'number', nullable: true },
               channel: { type: 'string', nullable: true },
@@ -59,12 +58,8 @@ export default async function ytDlpRoute (fastify, _opts) {
               channel_url: { type: 'string', format: 'uri', nullable: true },
               thumbnail: { type: 'string', format: 'uri', nullable: true },
               live_status: { type: 'string', nullable: true },
-              release_timestamp: { type: 'number', nullable: true } // Unix timestamp in seconds (matching yt-dlp format)
+              release_timestamp: { type: 'number', nullable: true }
             },
-            oneOf: [
-              { type: 'object', required: ['url'] },
-              { type: 'object', required: ['live_status', 'release_timestamp'] },
-            ],
             additionalProperties: false
           },
           default: {
@@ -83,15 +78,15 @@ export default async function ytDlpRoute (fastify, _opts) {
 
       if (isYouTubeUrl(parsedUrl)) {
         try {
-          const results = /** @type {OnesieFormatResults} */ (await fastify.runTask({
+          const results = /** @type {BasicInfoMetadataResults} */ (await fastify.runTask({
             url: parsedUrl.toString(),
             format,
-            returnRedirectUrl: true
+            metadataOnly: true
           }))
           return reply.status(200).send(results)
         } catch (err) {
           const handledError = err instanceof Error ? err : new Error('Unknown error', { cause: err })
-          request.log.error(handledError, 'Error when running onesie request')
+          request.log.error(handledError, 'Error when running discover request for YouTube URL')
           if (handledError?.message?.includes('No matching formats found')) {
             reply.status(404)
             return reply.send({
@@ -100,16 +95,13 @@ export default async function ytDlpRoute (fastify, _opts) {
           } else {
             reply.status(500)
             return reply.send({
-              description: 'Error extracting data from YouTube'
+              description: 'Error extracting metadata from YouTube'
             })
           }
         }
       } else {
         try {
-          const params = new URLSearchParams({
-            url,
-            format: ytDlpFormats[format]
-          })
+          const params = new URLSearchParams({ url, format: ytDlpFormats[format] })
           const response = await undiciRequest(
             `http://${fastify.config.YTDLPAPI_HOST}/info?${params.toString()}`,
             {
@@ -119,35 +111,42 @@ export default async function ytDlpRoute (fastify, _opts) {
               },
             })
 
-          const replyBody = /** @type {YtDlpInfoBody} */ (await response.body.json())
+          const replyBody = /** @type {YtDlpDiscoverBody} */ (await response.body.json())
 
           if (response.statusCode > 399) {
             reply.status(response.statusCode)
             return replyBody
           }
 
+          // url presence confirms a usable format was resolved — we strip it from the
+          // response since discover callers must not store or use it (playback resolves
+          // media URLs on demand via /unified at request time).
+          if (!replyBody.url) {
+            reply.status(404)
+            return reply.send({ description: 'No media URL found for URL' })
+          }
+
           const responseData = {
-            url: replyBody.url,
-            filesize_approx: replyBody.filesize_approx,
-            duration: replyBody.duration,
-            channel: replyBody.channel,
-            title: replyBody.title,
-            ext: replyBody.ext,
-            _type: replyBody._type,
-            description: replyBody.description,
-            uploader_url: replyBody.uploader_url,
-            channel_url: replyBody.channel_url,
-            thumbnail: replyBody.thumbnail,
-            live_status: replyBody.live_status,
-            release_timestamp: replyBody.release_timestamp,
+            filesize_approx: replyBody.filesize_approx ?? null,
+            duration: replyBody.duration ?? null,
+            channel: replyBody.channel ?? replyBody.uploader ?? null,
+            title: replyBody.title ?? null,
+            ext: replyBody.ext ?? null,
+            _type: replyBody._type ?? null,
+            description: replyBody.description ?? null,
+            uploader_url: replyBody.uploader_url ?? null,
+            channel_url: replyBody.channel_url ?? null,
+            thumbnail: replyBody.thumbnail ?? null,
+            live_status: replyBody.live_status ?? null,
+            release_timestamp: replyBody.release_timestamp ?? null,
           }
 
           return reply.status(200).send(responseData)
         } catch (err) {
-          fastify.log.error(new Error('Error while requesting yt-dlp endpoint data', { cause: err }))
+          fastify.log.error(new Error('Error while requesting yt-dlp info endpoint during discovery', { cause: err }))
           reply.status(500)
           return reply.send({
-            description: 'Error while requesting yt-dlp endpoint'
+            description: 'Error while requesting yt-dlp info endpoint during discovery'
           })
         }
       }

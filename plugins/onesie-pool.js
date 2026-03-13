@@ -38,8 +38,8 @@ export default fp(async function onesiePool (fastify, opts) {
     idleTimeout: Infinity,
     // Process one task at a time to ensure serialization
     concurrentTasksPerWorker: 1,
-    // Queue configuration
-    maxQueue: 'auto'
+    // Allow queuing — discover + unified both use this pool now
+    maxQueue: 100
   })
 
   // Listen for log messages from workers
