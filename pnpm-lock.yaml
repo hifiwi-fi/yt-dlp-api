@@ -96,8 +96,8 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
       undici:
-        specifier: ^7.24.3
-        version: 7.24.3
+        specifier: ^7.24.4
+        version: 7.24.4
       youtubei.js:
         specifier: github:bcomnes/YouTube.js#patch-float
         version: https://codeload.github.com/bcomnes/YouTube.js/tar.gz/59ea153b6c2327f7cce685020dac3f7f63bca4c2
@@ -3348,8 +3348,8 @@ packages:
   undici-types@7.24.0:
     resolution: {integrity: sha512-1beJCk3fcUtxAHf19TmrEd0yF3Co7El8fJvlSufm9EQNMKVR9H5XiamszDDt/FwinyUQPHpL2w8u9ZL8i8RtVg==}
 
-  undici@7.24.3:
-    resolution: {integrity: sha512-eJdUmK/Wrx2d+mnWWmwwLRyA7OQCkLap60sk3dOK4ViZR7DKwwptwuIvFBg2HaiP9ESaEdhtpSymQPvytpmkCA==}
+  undici@7.24.4:
+    resolution: {integrity: sha512-BM/JzwwaRXxrLdElV2Uo6cTLEjhSb3WXboncJamZ15NgUURmvlXvxa6xkwIOILIjPNo9i8ku136ZvWV0Uly8+w==}
     engines: {node: '>=20.18.1'}
 
   unicorn-magic@0.1.0:
@@ -7269,7 +7269,7 @@ snapshots:
 
   undici-types@7.24.0: {}
 
-  undici@7.24.3: {}
+  undici@7.24.4: {}
 
   unicorn-magic@0.1.0: {}
 
