@@ -49,7 +49,7 @@
     "piscina": "^5.1.4",
     "secure-json-parse": "^4.1.0",
     "undici": "^7.24.5",
-    "youtubei.js": "github:bcomnes/YouTube.js#patch-float"
+    "youtubei.js": "^17.0.1"
   },
   "devDependencies": {
     "@fastify/type-provider-json-schema-to-ts": "^5.0.0",
@@ -58,9 +58,8 @@
     "@tsconfig/strictest": "^2.0.7",
     "@types/jsdom": "^28.0.1",
     "@types/node": "^25.4.0",
-    "auto-changelog": "^2.0.0",
     "eslint": "^9.39.2",
-    "gh-release": "^7.0.0",
+    "releasearoni": "^0.1.0",
     "installed-check": "^10.0.1",
     "json-schema-to-ts": "^3.1.1",
     "neostandard": "^0.13.0",
@@ -88,11 +87,8 @@
     "postinstall-skip:custompatch": "custompatch",
     "postinstall:venv": "cd ytdlp-server/ && python3 -m venv venv && . venv/bin/activate && pip3 install -r requirements.txt",
     "clean": "rm -rf node_modules && rm -rf ytdlp-server/venv",
-    "prepublishOnly": "git push --follow-tags && gh-release -y",
-    "release": "git push --follow-tags && gh-release -y",
-    "version": "run-s version:*",
-    "version:changelog": "auto-changelog -p --template keepachangelog auto-changelog --breaking-pattern 'BREAKING CHANGE:'",
-    "version:git": "git add CHANGELOG.md",
+    "release": "git push --follow-tags && releasearoni -y",
+    "version": "releasearoni version",
     "test": "run-s test:*",
     "test:neostandard": "eslint .",
     "test:tsc": "tsc",

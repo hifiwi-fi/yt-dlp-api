@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__mcp-server-github__get_file_contents",
+      "Bash(pnpm install)",
+      "mcp__mcp-server-github__get_latest_release"
+    ]
+  }
+}

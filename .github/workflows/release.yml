@@ -79,6 +79,6 @@ jobs:
           newversion: ${{ env.NEW_VERSION }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_cmd: pnpm run release
-      - run: flyctl deploy --remote-only --buildkit
+      - run: flyctl deploy --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
