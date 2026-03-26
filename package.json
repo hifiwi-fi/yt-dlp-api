@@ -48,7 +48,7 @@
     "pino": "^10.3.0",
     "piscina": "^5.1.4",
     "secure-json-parse": "^4.1.0",
-    "undici": "^7.24.5",
+    "undici": "^7.24.6",
     "youtubei.js": "^17.0.1"
   },
   "devDependencies": {
