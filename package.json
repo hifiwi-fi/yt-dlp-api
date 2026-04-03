@@ -89,7 +89,7 @@
     "clean": "rm -rf node_modules && rm -rf ytdlp-server/venv",
     "preversion": "releasearoni preversion",
     "version": "releasearoni version",
-    "release": "releasearoni",
+    "release": "releasearoni --no-npm-check",
     "test": "run-s test:*",
     "test:neostandard": "eslint .",
     "test:tsc": "tsc",
@@ -102,7 +102,7 @@
     "print-plugins": "fastify print-plugins --import ./otel.js app.js",
     "start": "npm run watch",
     "roll-region": "./scripts/roll-region.sh",
-    "deploy": "fly deploy --buildkit",
+    "deploy": "fly deploy",
     "knip": "knip --dependencies"
   }
 }
