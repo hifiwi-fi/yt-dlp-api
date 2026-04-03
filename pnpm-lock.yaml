@@ -96,8 +96,8 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
       undici:
-        specifier: ^7.24.5
-        version: 7.24.5
+        specifier: ^8.0.0
+        version: 8.0.0
       youtubei.js:
         specifier: ^17.0.1
         version: 17.0.1
@@ -2916,9 +2916,13 @@ packages:
   undici-types@7.24.5:
     resolution: {integrity: sha512-kNh333UBSbgK35OIW7FwJTr9tTfVIG51Fm1tSVT7m8foPHfDVjsb7OIee/q/rs3bB2aV/3qOPgG5mHNWl1odiA==}
 
-  undici@7.24.5:
-    resolution: {integrity: sha512-3IWdCpjgxp15CbJnsi/Y9TCDE7HWVN19j1hmzVhoAkY/+CJx449tVxT5wZc1Gwg8J+P0LWvzlBzxYRnHJ+1i7Q==}
+  undici@7.24.7:
+    resolution: {integrity: sha512-H/nlJ/h0ggGC+uRL3ovD+G0i4bqhvsDOpbDv7At5eFLlj2b41L8QliGbnl2H7SnDiYhENphh1tQFJZf+MyfLsQ==}
     engines: {node: '>=20.18.1'}
+
+  undici@8.0.0:
+    resolution: {integrity: sha512-RGabV5g1ggSX5mU4k+B8BLWgb418gDbg0wAVFeiU00iOxtw4ufGsE6GFsuSd2uqOKooWSLf71JGapOFYpE8f+A==}
+    engines: {node: '>=22.19.0'}
 
   unicorn-magic@0.1.0:
     resolution: {integrity: sha512-lRfVq8fE8gz6QMBuDM6a+LO3IAzTi05H6gCVaUpir2E1Rwpo4ZUog45KpNXKC/Mn3Yb9UDuHumeFTo9iV/D9FQ==}
@@ -5893,7 +5897,7 @@ snapshots:
       ghauth: 7.0.1
       github-url-to-object: 4.0.6
       mime-types: 3.0.2
-      undici: 7.24.5
+      undici: 7.24.7
     transitivePeerDependencies:
       - encoding
 
@@ -6340,7 +6344,9 @@ snapshots:
 
   undici-types@7.24.5: {}
 
-  undici@7.24.5: {}
+  undici@7.24.7: {}
+
+  undici@8.0.0: {}
 
   unicorn-magic@0.1.0: {}
 
