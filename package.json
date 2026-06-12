@@ -7,14 +7,6 @@
   "bugs": {
     "url": "https://github.com/hifiwi-fi/yt-dlp-api/issues"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "protobufjs"
-    ],
-    "ignoredBuiltDependencies": [
-      "unrs-resolver"
-    ]
-  },
   "overrides": {
     "fast-json-stringify": "6.0.1"
   },
