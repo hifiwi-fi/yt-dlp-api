@@ -6,3 +6,6 @@ onlyBuiltDependencies:
 
 ignoredBuiltDependencies:
   - unrs-resolver
+
+minimumReleaseAgeExclude:
+  - '@fastify/otel@0.19.0'
