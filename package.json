@@ -38,7 +38,7 @@
     "ioredis": "^5.10.1",
     "npm-run-all2": "^9.0.1",
     "pino": "^10.3.0",
-    "piscina": "^5.1.4",
+    "piscina": "^5.2.0",
     "secure-json-parse": "^4.1.0",
     "undici": "^8.4.1",
     "youtubei.js": "^17.0.1"
