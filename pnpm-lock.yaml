@@ -133,8 +133,8 @@ importers:
         specifier: ^8.0.1
         version: 8.0.1
       releasearoni:
-        specifier: ^0.1.14
-        version: 0.1.14
+        specifier: ^0.2.0
+        version: 0.2.0
       type-fest:
         specifier: ^5.6.0
         version: 5.7.0
@@ -2392,8 +2392,8 @@ packages:
     resolution: {integrity: sha512-dYqgNSZbDwkaJ2ceRd9ojCGjBq+mOm9LmtXnAnEGyHhN/5R7iDW2TRw3h+o/jCFxus3P2LfWIIiwowAjANm7IA==}
     engines: {node: '>= 0.4'}
 
-  releasearoni@0.1.14:
-    resolution: {integrity: sha512-HFVmZD5RsNzYCbcWHtB+f1ggWtQkgCfsIiSM78AG+vFBeVMMnqWjnbS++OCcK7O2PeaZoM/H23eaJq4Ub7/Ddw==}
+  releasearoni@0.2.0:
+    resolution: {integrity: sha512-HM+85A6GuNw2rOX36epSmG2CvYKLL0juMyPA1NlsW3J1BgQo91fUKEPTqpufsk1MdCuAiS/jWf9WEpjDJ/bpAA==}
     engines: {node: '>=24', npm: '>=11'}
     hasBin: true
 
@@ -5600,7 +5600,7 @@ snapshots:
       gopd: 1.2.0
       set-function-name: 2.0.2
 
-  releasearoni@0.1.14:
+  releasearoni@0.2.0:
     dependencies:
       '@octokit/rest': 22.0.1
       argsclopts: 1.0.5
