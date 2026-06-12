@@ -6,6 +6,10 @@ on:
       new-version:
         description: "Calver version (YYYY.MM.DD). Defaults to today's date."
         required: false
+      skip-tests:
+        description: "Skip the test step (tests hit YouTube and fail in CI due to IP bans)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -66,7 +70,10 @@ jobs:
           name: pnpm-lock.yaml
           path: pnpm-lock.yaml
           archive: false
-      - run: pnpm test
+      - name: Test (non-blocking)
+        if: ${{ !inputs.skip-tests }}
+        run: pnpm test
+        continue-on-error: true
       - name: Set NEW_VERSION
         run: |
           if [ -z "${{ github.event.inputs['new-version'] }}" ]; then
