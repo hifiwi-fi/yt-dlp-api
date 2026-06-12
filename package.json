@@ -32,11 +32,11 @@
     "fastify-cli": "^8.0.0",
     "fastify-healthcheck": "^5.0.0",
     "fastify-piscina": "^5.0.0",
-    "fastify-plugin": "^5.0.1",
+    "fastify-plugin": "^6.0.0",
     "googlevideo": "4.0.4",
     "hyperid": "^4.0.0",
     "ioredis": "^5.10.1",
-    "npm-run-all2": "^8.0.1",
+    "npm-run-all2": "^9.0.1",
     "pino": "^10.3.0",
     "piscina": "^5.1.4",
     "secure-json-parse": "^4.1.0",
@@ -51,12 +51,12 @@
     "@types/jsdom": "^28.0.1",
     "@types/node": "^25.9.3",
     "eslint": "^9.39.2",
-    "releasearoni": "^0.2.0",
     "json-schema-to-ts": "^3.1.1",
     "neostandard": "^0.13.0",
     "patch-package": "^8.0.1",
+    "releasearoni": "^0.2.0",
     "type-fest": "^5.6.0",
-    "typescript": "~5.9.3"
+    "typescript": "~6.0.3"
   },
   "funding": {
     "type": "individual",
