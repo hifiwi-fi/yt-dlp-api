@@ -36,7 +36,7 @@
     "googlevideo": "4.0.4",
     "hyperid": "^4.0.0",
     "ioredis": "^5.10.1",
-    "npm-run-all2": "^9.0.1",
+    "npm-run-all2": "^9.0.2",
     "pino": "^10.3.0",
     "piscina": "^5.2.0",
     "secure-json-parse": "^4.1.0",
