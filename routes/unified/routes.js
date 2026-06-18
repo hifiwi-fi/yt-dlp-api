@@ -4,8 +4,8 @@ import { ytDlpFormats } from '../yt-dlp-formats.js'
 
 /**
 * @import { FastifyPluginAsyncJsonSchemaToTs } from '@fastify/type-provider-json-schema-to-ts'
-* @import { OnesieFormatResults } from '../../lib/onesie/index.js'
-* @import { ExtractKnownResponseType } from '../../types/fastify-utils.ts'
+* @import { OnesieFormatResults } from '#lib/onesie/index.js'
+* @import { ExtractKnownResponseType } from '#types/fastify-utils.js'
 **/
 
 /**
