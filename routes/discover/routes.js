@@ -5,6 +5,7 @@ import { ytDlpFormats } from '../yt-dlp-formats.js'
 /**
 * @import { FastifyPluginAsyncJsonSchemaToTs } from '@fastify/type-provider-json-schema-to-ts'
 * @import { BasicInfoMetadataResults } from '../../lib/onesie/index.js'
+* @import { ExtractKnownResponseType } from '../../types/fastify-utils.ts'
 **/
 
 /**
@@ -60,7 +61,7 @@ export default async function discoverRoute (fastify, _opts) {
               live_status: { type: 'string', nullable: true },
               release_timestamp: { type: 'number', nullable: true }
             },
-            additionalProperties: false
+            additionalProperties: true
           },
           default: {
             additionalProperties: true
@@ -69,6 +70,8 @@ export default async function discoverRoute (fastify, _opts) {
       }
     },
     async function (request, reply) {
+      /** @typedef {ExtractKnownResponseType<typeof reply.code<200>>} ReturnBody */
+
       const {
         url,
         format
@@ -126,6 +129,7 @@ export default async function discoverRoute (fastify, _opts) {
             return reply.send({ description: 'No media URL found for URL' })
           }
 
+          /** @type {ReturnBody} */
           const responseData = {
             filesize_approx: replyBody.filesize_approx ?? null,
             duration: replyBody.duration ?? null,
@@ -141,7 +145,7 @@ export default async function discoverRoute (fastify, _opts) {
             release_timestamp: replyBody.release_timestamp ?? null,
           }
 
-          return reply.status(200).send(responseData)
+          return reply.code(200).send(responseData)
         } catch (err) {
           fastify.log.error(new Error('Error while requesting yt-dlp info endpoint during discovery', { cause: err }))
           reply.status(500)
