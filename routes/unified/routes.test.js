@@ -1,5 +1,5 @@
 import { test } from 'node:test'
-import { build } from '../../test/helper.js'
+import { build } from '#test/helper.js'
 import assert from 'node:assert/strict'
 
 const youtubeVideoUrl = 'https://www.youtube.com/watch?v=6Dh-RL__uN4'
