@@ -98,7 +98,10 @@
     "knip": "knip --dependencies"
   },
   "imports": {
+    "#config/*": "./config/*",
     "#lib/*": "./lib/*",
+    "#plugins/*": "./plugins/*",
+    "#routes/*": "./routes/*",
     "#test/*": "./test/*",
     "#types/*.js": "./types/*.ts"
   }
