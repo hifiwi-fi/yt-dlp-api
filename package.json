@@ -96,5 +96,13 @@
     "deploy": "./scripts/deploy-with-sentry.sh fly.toml Dockerfile",
     "sentry:login": "sentry-cli login",
     "knip": "knip --dependencies"
+  },
+  "imports": {
+    "#config/*": "./config/*",
+    "#lib/*": "./lib/*",
+    "#plugins/*": "./plugins/*",
+    "#routes/*": "./routes/*",
+    "#test/*": "./test/*",
+    "#types/*.js": "./types/*.ts"
   }
 }

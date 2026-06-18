@@ -4,7 +4,8 @@ import { ytDlpFormats } from '../yt-dlp-formats.js'
 
 /**
 * @import { FastifyPluginAsyncJsonSchemaToTs } from '@fastify/type-provider-json-schema-to-ts'
-* @import { OnesieFormatResults } from '../../lib/onesie/index.js'
+* @import { OnesieFormatResults } from '#lib/onesie/index.js'
+* @import { ExtractKnownResponseType } from '#types/fastify-utils.js'
 **/
 
 /**
@@ -65,7 +66,7 @@ export default async function ytDlpRoute (fastify, _opts) {
               { type: 'object', required: ['url'] },
               { type: 'object', required: ['live_status', 'release_timestamp'] },
             ],
-            additionalProperties: false
+            additionalProperties: true
           },
           default: {
             additionalProperties: true
@@ -74,6 +75,8 @@ export default async function ytDlpRoute (fastify, _opts) {
       }
     },
     async function (request, reply) {
+      /** @typedef {ExtractKnownResponseType<typeof reply.code<200>>} ReturnBody */
+
       const {
         url,
         format
@@ -126,6 +129,7 @@ export default async function ytDlpRoute (fastify, _opts) {
             return replyBody
           }
 
+          /** @type {ReturnBody} */
           const responseData = {
             url: replyBody.url,
             filesize_approx: replyBody.filesize_approx,
@@ -142,7 +146,7 @@ export default async function ytDlpRoute (fastify, _opts) {
             release_timestamp: replyBody.release_timestamp,
           }
 
-          return reply.status(200).send(responseData)
+          return reply.code(200).send(responseData)
         } catch (err) {
           fastify.log.error(new Error('Error while requesting yt-dlp endpoint data', { cause: err }))
           reply.status(500)

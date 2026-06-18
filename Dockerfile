@@ -8,7 +8,7 @@ RUN apk add --no-cache python3 py3-pip nodejs git protobuf pnpm npm deno
 WORKDIR /usr/src/app
 
 # Copy package files first for better layer caching
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Set up Python Deps
 COPY ytdlp-server/requirements.txt ./ytdlp-server/requirements.txt
