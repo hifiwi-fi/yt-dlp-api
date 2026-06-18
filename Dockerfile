@@ -1,4 +1,7 @@
-FROM alpine:3.22
+FROM alpine:3.24
+
+ARG SENTRY_RELEASE=development
+ENV SENTRY_RELEASE=${SENTRY_RELEASE}
 
 RUN apk add --no-cache python3 py3-pip nodejs git protobuf pnpm npm deno
 

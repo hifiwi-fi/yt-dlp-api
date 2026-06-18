@@ -8,11 +8,15 @@ import { HostMetrics } from '@opentelemetry/host-metrics'
 import { metrics } from '@opentelemetry/api'
 
 const sentryDsn = process.env['SENTRY_DSN']
+const sentryEnvironment = process.env['SENTRY_ENVIRONMENT'] ?? process.env['ENV'] ?? process.env['NODE_ENV']
+const sentryRelease = process.env['SENTRY_RELEASE']
 
 if (sentryDsn) {
   const Sentry = await import('@sentry/node')
   Sentry.init({
     dsn: sentryDsn,
+    environment: sentryEnvironment,
+    release: sentryRelease,
     skipOpenTelemetrySetup: true,
   })
 }

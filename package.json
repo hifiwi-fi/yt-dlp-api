@@ -46,6 +46,7 @@
   },
   "devDependencies": {
     "@fastify/type-provider-json-schema-to-ts": "^5.0.0",
+    "@sentry/cli": "^3.5.1",
     "@tsconfig/node-ts": "^23.6.4",
     "@tsconfig/node24": "^24.0.4",
     "@tsconfig/strictest": "^2.0.7",
@@ -92,7 +93,8 @@
     "print-plugins": "fastify print-plugins --import ./otel.js app.js",
     "start": "npm run watch",
     "roll-region": "./scripts/roll-region.sh",
-    "deploy": "fly deploy",
+    "deploy": "./scripts/deploy-with-sentry.sh fly.toml Dockerfile",
+    "sentry:login": "sentry-cli login",
     "knip": "knip --dependencies"
   }
 }

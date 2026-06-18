@@ -79,6 +79,9 @@ export const envSchema = /** @type {const} @satisfies {JSONSchema} */ ({
     SENTRY_DSN: {
       type: 'string',
     },
+    SENTRY_RELEASE: {
+      type: 'string',
+    },
     REDIS_CACHE_URL: {
       type: 'string',
       default: 'redis://localhost:6379/1',
