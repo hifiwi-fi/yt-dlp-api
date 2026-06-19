@@ -51,7 +51,7 @@
     "@tsconfig/node24": "^24.0.4",
     "@tsconfig/strictest": "^2.0.7",
     "@types/jsdom": "^28.0.1",
-    "@types/node": "^25.9.3",
+    "@types/node": "^26.0.0",
     "eslint": "^9.39.2",
     "json-schema-to-ts": "^3.1.1",
     "neostandard": "^0.13.0",
