@@ -34,7 +34,8 @@ async function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-test('youtubei decorator onesieFormatRequest test', async (t) => {
+// Live YouTube extraction through the Piscina worker does not pass reliably in CI.
+test('youtubei decorator onesieFormatRequest test', { todo: process.env.CI }, async (t) => {
   const app = await build(t)
 
   // Call the onesieFormatRequest method off the youtubei decorator
