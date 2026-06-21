@@ -1,0 +1,18 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema-jsonc.json",
+  "ignore": [],
+  "ignoreBinaries": ["python3", "pip3", "flask", "gunicorn"],
+  "ignoreUnresolved": [],
+  "ignoreDependencies": ["@types/jsdom", "patch-package"],
+  "entry": [
+    "app.js",
+    "otel.js",
+    "config/**/*.js",
+    "lib/**/*.js",
+    "plugins/**/*.js",
+    "routes/**/*.js",
+    "test/**/*.js",
+    "types/**/*.ts"
+  ],
+  "project": ["**/*.js", "**/*.ts", "**/*.d.ts"]
+}
