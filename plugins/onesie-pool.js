@@ -1,8 +1,40 @@
 /**
  * @import { WorkerConfig } from '../lib/onesie-worker.js'
+ * @import { JSONSchema } from 'json-schema-to-ts'
  */
 import fp from 'fastify-plugin'
 import { resolve, join } from 'path'
+
+export const onesiePoolEnvSchema = /** @type {const} @satisfies {JSONSchema} */ ({
+  properties: {
+    REDIS_CACHE_URL: {
+      type: 'string',
+      default: 'redis://localhost:6379/1',
+    },
+    TVCONFIG_REFRESH_MS: {
+      type: 'number',
+      default: 18_000_000
+    },
+    INNERTUBE_REFRESH_MS: {
+      type: 'number',
+      default: 172_800_000 // 48 hours in milliseconds
+    },
+    YOUTUBE_PLAYER_ID: {
+      type: 'string',
+      // default: '56af1322'
+      // default: '8a6e7bc4'
+      // default: '6c5cb4f4'
+      // default: '487b9fc1'
+      // default: '6c5cb4f4'
+      // default: '56211dc2'
+      // default: '99f55c01'
+      // default: 'ecc3e9a7'
+      // default: '05540cb0'
+      // default: '9f4cc5e4'
+    },
+  },
+  required: [],
+})
 
 const __dirname = import.meta.dirname
 

@@ -1,14 +1,25 @@
 /**
- * @import { FromSchema, JSONSchema } from "json-schema-to-ts"
+ * @import { FromSchema, JSONSchema } from 'json-schema-to-ts'
  * @typedef { typeof envSchema } EnvSchemaType
  * @typedef { FromSchema<EnvSchemaType> } DotEnvSchemaType
  */
+import { authBasicEnvSchema } from '#plugins/auth-basic.js'
+import { onesiePoolEnvSchema } from '#plugins/onesie-pool.js'
+import { otelMetricsEnvSchema } from '#plugins/otel-metrics.js'
+import { sentryEnvSchema } from '#plugins/sentry.js'
+import { ytDlpServerEnvSchema } from '#plugins/yt-dlp-server.js'
 
 export const envSchema = /** @type {const} @satisfies {JSONSchema} */ ({
   type: 'object',
   $id: 'schema:dotenv',
-  required: [],
   additionalProperties: false,
+  required: [
+    ...authBasicEnvSchema.required,
+    ...onesiePoolEnvSchema.required,
+    ...otelMetricsEnvSchema.required,
+    ...sentryEnvSchema.required,
+    ...ytDlpServerEnvSchema.required,
+  ],
   properties: {
     ENV: {
       type: 'string',
@@ -23,68 +34,11 @@ export const envSchema = /** @type {const} @satisfies {JSONSchema} */ ({
       enum: ['http', 'https'],
       default: 'http',
     },
-    BASIC_AUTH_USERNAME: {
-      type: 'string',
-      default: 'user'
-    },
-    BASIC_AUTH_PASSWORD: {
-      type: 'string',
-      default: 'pass'
-    },
-    YTDLPAPI_HOST: {
-      type: 'string',
-      default: '127.0.0.1:3011'
-    },
-    YTDLPAPI_USER: {
-      type: 'string',
-      default: 'user'
-    },
-    YTDLPAPI_PASSWORD: {
-      type: 'string',
-      default: 'pass'
-    },
-    TVCONFIG_REFRESH_MS: {
-      type: 'number',
-      default: 18_000_000
-    },
-    INNERTUBE_REFRESH_MS: {
-      type: 'number',
-      default: 172_800_000 // 48 hours in milliseconds
-    },
-    YOUTUBE_PLAYER_ID: {
-      type: 'string',
-      // default: '56af1322'
-      // default: '8a6e7bc4'
-      // default: '6c5cb4f4'
-      // default: '487b9fc1'
-      // default: '6c5cb4f4'
-      // default: '56211dc2'
-      // default: '99f55c01'
-      // default: 'ecc3e9a7'
-      // default: '05540cb0'
-      // default: '9f4cc5e4'
-    },
-    OTEL_SERVICE_NAME: {
-      type: 'string',
-      default: 'yt-dlp-api',
-    },
-    OTEL_SERVICE_VERSION: {
-      type: 'string',
-      default: '1.0.0',
-    },
-    OTEL_RESOURCE_ATTRIBUTES: {
-      type: 'string',
-      default: 'deployment.environment=development',
-    },
-    SENTRY_DSN: {
-      type: 'string',
-    },
-    SENTRY_RELEASE: {
-      type: 'string',
-    },
-    REDIS_CACHE_URL: {
-      type: 'string',
-      default: 'redis://localhost:6379/1',
-    },
+
+    ...authBasicEnvSchema.properties,
+    ...onesiePoolEnvSchema.properties,
+    ...otelMetricsEnvSchema.properties,
+    ...sentryEnvSchema.properties,
+    ...ytDlpServerEnvSchema.properties,
   },
 })
