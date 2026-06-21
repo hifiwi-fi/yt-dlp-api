@@ -1,4 +1,21 @@
+/**
+ * @import { JSONSchema } from 'json-schema-to-ts'
+ */
 import fp from 'fastify-plugin'
+
+export const authBasicEnvSchema = /** @type {const} @satisfies {JSONSchema} */ ({
+  properties: {
+    BASIC_AUTH_USERNAME: {
+      type: 'string',
+      default: 'user'
+    },
+    BASIC_AUTH_PASSWORD: {
+      type: 'string',
+      default: 'pass'
+    },
+  },
+  required: [],
+})
 
 /**
  * This plugins adds fastify-auth

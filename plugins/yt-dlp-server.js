@@ -6,7 +6,26 @@ import { join, resolve } from 'node:path'
 /**
  * @import { ChildProcessByStdio } from 'node:child_process'
  * @import { Readable } from 'node:stream'
+ * @import { JSONSchema } from 'json-schema-to-ts'
  */
+
+export const ytDlpServerEnvSchema = /** @type {const} @satisfies {JSONSchema} */ ({
+  properties: {
+    YTDLPAPI_HOST: {
+      type: 'string',
+      default: '127.0.0.1:3011'
+    },
+    YTDLPAPI_USER: {
+      type: 'string',
+      default: 'user'
+    },
+    YTDLPAPI_PASSWORD: {
+      type: 'string',
+      default: 'pass'
+    },
+  },
+  required: [],
+})
 
 /**
  * This plugin manages the yt-dlp Flask server as a subprocess
