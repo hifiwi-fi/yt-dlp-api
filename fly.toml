@@ -56,14 +56,14 @@ swap_size_mb = 1024
 
   [[services.tcp_checks]]
     interval = "15s"
-    timeout = "2s"
-    grace_period = "15s"
+    timeout = "5s"
+    grace_period = "30s"
     restart_limit = 0
 
   [[services.http_checks]]
-    interval = "10s"
-    timeout = "2s"
-    grace_period = "60s"
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "90s"
     restart_limit = 0
     method = "get"
     path = "/health"
