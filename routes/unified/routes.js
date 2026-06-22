@@ -4,6 +4,7 @@ import { ytDlpFormats } from '../yt-dlp-formats.js'
 
 /**
 * @import { FastifyPluginAsyncJsonSchemaToTs } from '@fastify/type-provider-json-schema-to-ts'
+* @import { JSONSchema } from 'json-schema-to-ts'
 * @import { OnesieFormatResults } from '#lib/onesie/index.js'
 * @import { ExtractKnownResponseType } from '#types/fastify-utils.js'
 **/
@@ -25,6 +26,25 @@ import { ytDlpFormats } from '../yt-dlp-formats.js'
  *   release_timestamp?: number | null,
  * }} YtDlpInfoBody
  */
+
+const youtubeExtractionErrorSchema = /** @type {const} @satisfies {JSONSchema} */ ({
+  type: 'object',
+  required: ['code', 'description'],
+  properties: {
+    code: { type: 'string' },
+    description: { type: 'string' }
+  },
+  additionalProperties: false
+})
+
+const internalErrorSchema = /** @type {const} @satisfies {JSONSchema} */ ({
+  type: 'object',
+  required: ['description'],
+  properties: {
+    description: { type: 'string' }
+  },
+  additionalProperties: false
+})
 
 /**
  * @type {FastifyPluginAsyncJsonSchemaToTs}
@@ -68,6 +88,10 @@ export default async function ytDlpRoute (fastify, _opts) {
             ],
             additionalProperties: true
           },
+          404: youtubeExtractionErrorSchema,
+          424: youtubeExtractionErrorSchema,
+          500: internalErrorSchema,
+          503: youtubeExtractionErrorSchema,
           default: {
             additionalProperties: true
           }
@@ -94,18 +118,39 @@ export default async function ytDlpRoute (fastify, _opts) {
           return reply.status(200).send(results)
         } catch (err) {
           const handledError = err instanceof Error ? err : new Error('Unknown error', { cause: err })
-          request.log.error(handledError, 'Error when running onesie request')
-          if (handledError?.message?.includes('No matching formats found')) {
-            reply.status(404)
-            return reply.send({
-              description: 'No matching formats found'
-            })
-          } else {
-            reply.status(500)
-            return reply.send({
-              description: 'Error extracting data from YouTube'
-            })
+          const extractionError = getYouTubeExtractionErrorResponse(handledError)
+
+          request.log.warn({
+            err: handledError,
+            url: parsedUrl.toString(),
+            format,
+            youtubeErrorCode: extractionError.code,
+          }, 'YouTube upstream did not return extractable media data')
+
+          if (extractionError.statusCode === 404) {
+            /** @type {ExtractKnownResponseType<typeof reply.code<404>>} */
+            const responseData = {
+              code: extractionError.code,
+              description: extractionError.description
+            }
+            return reply.code(404).send(responseData)
           }
+
+          if (extractionError.statusCode === 424) {
+            /** @type {ExtractKnownResponseType<typeof reply.code<424>>} */
+            const responseData = {
+              code: extractionError.code,
+              description: extractionError.description
+            }
+            return reply.code(424).send(responseData)
+          }
+
+          /** @type {ExtractKnownResponseType<typeof reply.code<503>>} */
+          const responseData = {
+            code: extractionError.code,
+            description: extractionError.description
+          }
+          return reply.code(503).send(responseData)
         }
       } else {
         try {
@@ -125,8 +170,7 @@ export default async function ytDlpRoute (fastify, _opts) {
           const replyBody = /** @type {YtDlpInfoBody} */ (await response.body.json())
 
           if (response.statusCode > 399) {
-            reply.status(response.statusCode)
-            return replyBody
+            return reply.status(response.statusCode).send(replyBody)
           }
 
           /** @type {ReturnBody} */
@@ -149,12 +193,93 @@ export default async function ytDlpRoute (fastify, _opts) {
           return reply.code(200).send(responseData)
         } catch (err) {
           fastify.log.error(new Error('Error while requesting yt-dlp endpoint data', { cause: err }))
-          reply.status(500)
-          return reply.send({
+          /** @type {ExtractKnownResponseType<typeof reply.code<500>>} */
+          const responseData = {
             description: 'Error while requesting yt-dlp endpoint'
-          })
+          }
+          return reply.code(500).send(responseData)
         }
       }
     }
   )
+}
+
+/**
+ * @typedef {Object} YouTubeExtractionErrorResponse
+ * @property {number} statusCode
+ * @property {string} code
+ * @property {string} description
+ */
+
+/**
+ * Classifies failures from the YouTube Onesie extraction path into stable API
+ * responses. Keep retryable dependency failures in the 5xx range so callers can
+ * retry without treating them as application crashes.
+ *
+ * @param {Error} err
+ * @returns {YouTubeExtractionErrorResponse}
+ */
+export function getYouTubeExtractionErrorResponse (err) {
+  const message = getErrorChainMessage(err)
+
+  if (message.includes('No matching formats found')) {
+    return {
+      statusCode: 404,
+      code: 'no_matching_formats',
+      description: 'No matching formats found'
+    }
+  }
+
+  if (message.includes('No videoId resolved') || message.includes('Error while resolving videoId')) {
+    return {
+      statusCode: 424,
+      code: 'youtube_video_id_unresolved',
+      description: 'Could not resolve a YouTube video ID from the source URL'
+    }
+  }
+
+  if (message.includes('HEAD check failed')) {
+    return {
+      statusCode: 503,
+      code: 'youtube_media_url_unavailable',
+      description: 'YouTube media URL is not currently available'
+    }
+  }
+
+  if (
+    message.includes('Missing clientKeyData from tvConfig') ||
+    message.includes('Missing onesieUstreamerConfig from tvConfig') ||
+    message.includes('Missing encryptedClientKey from tvConfig') ||
+    message.includes('Missing baseUrl from tvConfig')
+  ) {
+    return {
+      statusCode: 503,
+      code: 'youtube_client_config_unavailable',
+      description: 'YouTube client configuration is not currently available'
+    }
+  }
+
+  return {
+    statusCode: 503,
+    code: 'youtube_upstream_unavailable',
+    description: 'YouTube is not currently returning extractable media data'
+  }
+}
+
+/**
+ * @param {unknown} err
+ * @returns {string}
+ */
+function getErrorChainMessage (err) {
+  if (!(err instanceof Error)) return String(err)
+
+  const messages = [err.message]
+  let cause = err.cause
+
+  while (cause instanceof Error) {
+    messages.push(cause.message)
+    cause = cause.cause
+  }
+
+  return messages.join(' | ')
 }

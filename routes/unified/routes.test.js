@@ -1,8 +1,49 @@
 import { test } from 'node:test'
 import { build } from '#test/helper.js'
 import assert from 'node:assert/strict'
+import { getYouTubeExtractionErrorResponse } from './routes.js'
 
 const youtubeVideoUrl = 'https://www.youtube.com/watch?v=6Dh-RL__uN4'
+
+test('getYouTubeExtractionErrorResponse classifies known onesie failures', () => {
+  assert.deepStrictEqual(
+    getYouTubeExtractionErrorResponse(new Error('No matching formats found')),
+    {
+      statusCode: 404,
+      code: 'no_matching_formats',
+      description: 'No matching formats found'
+    }
+  )
+
+  assert.deepStrictEqual(
+    getYouTubeExtractionErrorResponse(new Error('HEAD check failed — got status 403')),
+    {
+      statusCode: 503,
+      code: 'youtube_media_url_unavailable',
+      description: 'YouTube media URL is not currently available'
+    }
+  )
+
+  assert.deepStrictEqual(
+    getYouTubeExtractionErrorResponse(new Error('outer failure', {
+      cause: new Error('Missing baseUrl from tvConfig')
+    })),
+    {
+      statusCode: 503,
+      code: 'youtube_client_config_unavailable',
+      description: 'YouTube client configuration is not currently available'
+    }
+  )
+
+  assert.deepStrictEqual(
+    getYouTubeExtractionErrorResponse(new Error('Unexpected onesie failure')),
+    {
+      statusCode: 503,
+      code: 'youtube_upstream_unavailable',
+      description: 'YouTube is not currently returning extractable media data'
+    }
+  )
+})
 
 test('unified yt-dlp endpoint', { todo: process.env.CI }, async (t) => {
   await t.test('GET /unified - X.com video extraction', async (t) => {

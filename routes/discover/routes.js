@@ -1,9 +1,11 @@
 import { request as undiciRequest } from 'undici'
 import { isYouTubeUrl } from '@bret/is-youtube-url'
+import { getYouTubeExtractionErrorResponse } from '../unified/routes.js'
 import { ytDlpFormats } from '../yt-dlp-formats.js'
 
 /**
 * @import { FastifyPluginAsyncJsonSchemaToTs } from '@fastify/type-provider-json-schema-to-ts'
+* @import { JSONSchema } from 'json-schema-to-ts'
 * @import { BasicInfoMetadataResults } from '#lib/onesie/index.js'
 * @import { ExtractKnownResponseType } from '#types/fastify-utils.js'
 **/
@@ -25,6 +27,25 @@ import { ytDlpFormats } from '../yt-dlp-formats.js'
  *   release_timestamp?: number | null,
  * }} YtDlpDiscoverBody
  */
+
+const youtubeExtractionErrorSchema = /** @type {const} @satisfies {JSONSchema} */ ({
+  type: 'object',
+  required: ['code', 'description'],
+  properties: {
+    code: { type: 'string' },
+    description: { type: 'string' }
+  },
+  additionalProperties: false
+})
+
+const internalErrorSchema = /** @type {const} @satisfies {JSONSchema} */ ({
+  type: 'object',
+  required: ['description'],
+  properties: {
+    description: { type: 'string' }
+  },
+  additionalProperties: false
+})
 
 /**
  * @type {FastifyPluginAsyncJsonSchemaToTs}
@@ -63,6 +84,10 @@ export default async function discoverRoute (fastify, _opts) {
             },
             additionalProperties: true
           },
+          404: youtubeExtractionErrorSchema,
+          424: youtubeExtractionErrorSchema,
+          500: internalErrorSchema,
+          503: youtubeExtractionErrorSchema,
           default: {
             additionalProperties: true
           }
@@ -89,18 +114,39 @@ export default async function discoverRoute (fastify, _opts) {
           return reply.status(200).send(results)
         } catch (err) {
           const handledError = err instanceof Error ? err : new Error('Unknown error', { cause: err })
-          request.log.error(handledError, 'Error when running discover request for YouTube URL')
-          if (handledError?.message?.includes('No matching formats found')) {
-            reply.status(404)
-            return reply.send({
-              description: 'No matching formats found'
-            })
-          } else {
-            reply.status(500)
-            return reply.send({
-              description: 'Error extracting metadata from YouTube'
-            })
+          const extractionError = getYouTubeExtractionErrorResponse(handledError)
+
+          request.log.warn({
+            err: handledError,
+            url: parsedUrl.toString(),
+            format,
+            youtubeErrorCode: extractionError.code,
+          }, 'YouTube upstream did not return extractable metadata')
+
+          if (extractionError.statusCode === 404) {
+            /** @type {ExtractKnownResponseType<typeof reply.code<404>>} */
+            const responseData = {
+              code: extractionError.code,
+              description: extractionError.description
+            }
+            return reply.code(404).send(responseData)
           }
+
+          if (extractionError.statusCode === 424) {
+            /** @type {ExtractKnownResponseType<typeof reply.code<424>>} */
+            const responseData = {
+              code: extractionError.code,
+              description: extractionError.description
+            }
+            return reply.code(424).send(responseData)
+          }
+
+          /** @type {ExtractKnownResponseType<typeof reply.code<503>>} */
+          const responseData = {
+            code: extractionError.code,
+            description: extractionError.description
+          }
+          return reply.code(503).send(responseData)
         }
       } else {
         try {
@@ -117,16 +163,19 @@ export default async function discoverRoute (fastify, _opts) {
           const replyBody = /** @type {YtDlpDiscoverBody} */ (await response.body.json())
 
           if (response.statusCode > 399) {
-            reply.status(response.statusCode)
-            return replyBody
+            return reply.status(response.statusCode).send(replyBody)
           }
 
           // url presence confirms a usable format was resolved — we strip it from the
           // response since discover callers must not store or use it (playback resolves
           // media URLs on demand via /unified at request time).
           if (!replyBody.url) {
-            reply.status(404)
-            return reply.send({ description: 'No media URL found for URL' })
+            /** @type {ExtractKnownResponseType<typeof reply.code<404>>} */
+            const responseData = {
+              code: 'no_media_url',
+              description: 'No media URL found for URL'
+            }
+            return reply.code(404).send(responseData)
           }
 
           /** @type {ReturnBody} */
@@ -148,10 +197,11 @@ export default async function discoverRoute (fastify, _opts) {
           return reply.code(200).send(responseData)
         } catch (err) {
           fastify.log.error(new Error('Error while requesting yt-dlp info endpoint during discovery', { cause: err }))
-          reply.status(500)
-          return reply.send({
+          /** @type {ExtractKnownResponseType<typeof reply.code<500>>} */
+          const responseData = {
             description: 'Error while requesting yt-dlp info endpoint during discovery'
-          })
+          }
+          return reply.code(500).send(responseData)
         }
       }
     }
