@@ -1,0 +1,9 @@
+{
+  "include": ["ytdlp-server"],
+  "exclude": ["**/__pycache__", "ytdlp-server/venv"],
+  "venvPath": "ytdlp-server",
+  "venv": "venv",
+  "pythonVersion": "3.12",
+  "typeCheckingMode": "basic",
+  "reportMissingTypeStubs": "none"
+}

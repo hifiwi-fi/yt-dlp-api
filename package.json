@@ -55,6 +55,7 @@
     "knip": "^6.7.0",
     "neostandard": "^0.13.0",
     "patch-package": "^8.0.1",
+    "pyright": "^1.1.411",
     "releasearoni": "^0.2.0",
     "type-fest": "^5.6.0",
     "typescript": "~6.0.3"
@@ -84,6 +85,7 @@
     "test": "run-s test:*",
     "test:neostandard": "eslint .",
     "test:tsc": "tsc",
+    "test:pyright": "pyright",
     "test:node-test": "node --test --test-concurrency=1 --test-reporter=dot",
     "watch": "FORCE_COLOR=1 run-p -n -l watch:*",
     "watch:fastify": "fastify start -w --ignore-watch='node_modules .git ytdlp-server patches test scripts .github .vscode .zed pnpm-lock.yaml CHANGELOG.md' -l info -P -p 3010 --options --address localhost --import ./otel.js app.js",
