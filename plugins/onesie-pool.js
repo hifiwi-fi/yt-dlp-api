@@ -19,6 +19,15 @@ export const onesiePoolEnvSchema = /** @type {const} @satisfies {JSONSchema} */ 
       type: 'number',
       default: 172_800_000 // 48 hours in milliseconds
     },
+    YOUTUBE_WEB_CLIENT_VERSION: {
+      type: 'string',
+      // Override the WEB client version advertised in onesie player requests.
+      // Normally unset (library's current version). An operational lever if a
+      // specific version starts misbehaving — but note progressive-format
+      // availability is A/B-bucketed per visitor session, so a version pin
+      // does not reliably restore it.
+      // default: '2.20260206.01.00'
+    },
     YOUTUBE_PLAYER_ID: {
       type: 'string',
       // default: '56af1322'
@@ -58,6 +67,10 @@ export default fp(async function onesiePool (fastify, opts) {
   // Only add playerId if it's explicitly provided and not null/undefined
   if (fastify.config.YOUTUBE_PLAYER_ID != null) {
     workerData.playerId = fastify.config.YOUTUBE_PLAYER_ID
+  }
+
+  if (fastify.config.YOUTUBE_WEB_CLIENT_VERSION != null) {
+    workerData.webClientVersion = fastify.config.YOUTUBE_WEB_CLIENT_VERSION
   }
 
   await fastify.register(import('@piscina/fastify'), {

@@ -234,6 +234,14 @@ export default async function ytDlpRoute (fastify, _opts) {
 export function getYouTubeExtractionErrorResponse (err) {
   const message = getErrorChainMessage(err)
 
+  if (message.includes('SABR-only session')) {
+    return {
+      statusCode: 503,
+      code: 'youtube_sabr_only_session',
+      description: 'YouTube served only SABR streaming for this session; media URLs are temporarily unavailable'
+    }
+  }
+
   if (message.includes('No matching formats found')) {
     return {
       statusCode: 404,
