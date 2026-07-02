@@ -1,6 +1,7 @@
 import { request as undiciRequest } from 'undici'
 import { isYouTubeUrl } from '@bret/is-youtube-url'
 import { getYouTubeExtractionErrorResponse } from '../unified/routes.js'
+import { normalizeYtDlpUri } from '../yt-dlp-response.js'
 import { ytDlpFormats } from '../yt-dlp-formats.js'
 
 /**
@@ -12,6 +13,7 @@ import { ytDlpFormats } from '../yt-dlp-formats.js'
 
 /**
  * @typedef {{
+ *   url?: string | null,
  *   filesize_approx?: number | null,
  *   duration?: number | null,
  *   channel?: string | null,
@@ -166,10 +168,12 @@ export default async function discoverRoute (fastify, _opts) {
             return reply.status(response.statusCode).send(replyBody)
           }
 
+          const mediaUrl = normalizeYtDlpUri(replyBody.url)
+
           // url presence confirms a usable format was resolved — we strip it from the
           // response since discover callers must not store or use it (playback resolves
           // media URLs on demand via /unified at request time).
-          if (!replyBody.url) {
+          if (!mediaUrl) {
             /** @type {ExtractKnownResponseType<typeof reply.code<404>>} */
             const responseData = {
               code: 'no_media_url',
@@ -187,9 +191,9 @@ export default async function discoverRoute (fastify, _opts) {
             ext: replyBody.ext ?? null,
             _type: replyBody._type ?? null,
             description: replyBody.description ?? null,
-            uploader_url: replyBody.uploader_url ?? null,
-            channel_url: replyBody.channel_url ?? null,
-            thumbnail: replyBody.thumbnail ?? null,
+            uploader_url: normalizeYtDlpUri(replyBody.uploader_url),
+            channel_url: normalizeYtDlpUri(replyBody.channel_url),
+            thumbnail: normalizeYtDlpUri(replyBody.thumbnail),
             live_status: replyBody.live_status ?? null,
             release_timestamp: replyBody.release_timestamp ?? null,
           }

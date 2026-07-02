@@ -1,5 +1,6 @@
 import { request as undiciRequest } from 'undici'
 import { isYouTubeUrl } from '@bret/is-youtube-url'
+import { normalizeYtDlpUri } from '../yt-dlp-response.js'
 import { ytDlpFormats } from '../yt-dlp-formats.js'
 
 /**
@@ -173,21 +174,32 @@ export default async function ytDlpRoute (fastify, _opts) {
             return reply.status(response.statusCode).send(replyBody)
           }
 
+          const mediaUrl = normalizeYtDlpUri(replyBody.url)
+
+          if (!mediaUrl && !replyBody.live_status) {
+            /** @type {ExtractKnownResponseType<typeof reply.code<404>>} */
+            const responseData = {
+              code: 'no_media_url',
+              description: 'No media URL found for URL'
+            }
+            return reply.code(404).send(responseData)
+          }
+
           /** @type {ReturnBody} */
           const responseData = {
-            url: replyBody.url,
-            filesize_approx: replyBody.filesize_approx,
-            duration: replyBody.duration,
-            channel: replyBody.channel,
-            title: replyBody.title,
-            ext: replyBody.ext,
-            _type: replyBody._type,
-            description: replyBody.description,
-            uploader_url: replyBody.uploader_url,
-            channel_url: replyBody.channel_url,
-            thumbnail: replyBody.thumbnail,
-            live_status: replyBody.live_status,
-            release_timestamp: replyBody.release_timestamp,
+            ...(mediaUrl ? { url: mediaUrl } : {}),
+            filesize_approx: replyBody.filesize_approx ?? null,
+            duration: replyBody.duration ?? null,
+            channel: replyBody.channel ?? null,
+            title: replyBody.title ?? null,
+            ext: replyBody.ext ?? null,
+            _type: replyBody._type ?? null,
+            description: replyBody.description ?? null,
+            uploader_url: normalizeYtDlpUri(replyBody.uploader_url),
+            channel_url: normalizeYtDlpUri(replyBody.channel_url),
+            thumbnail: normalizeYtDlpUri(replyBody.thumbnail),
+            live_status: replyBody.live_status ?? null,
+            release_timestamp: replyBody.release_timestamp ?? null,
           }
 
           return reply.code(200).send(responseData)
