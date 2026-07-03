@@ -3,7 +3,8 @@ FROM alpine:3.24
 ARG SENTRY_RELEASE=development
 ENV SENTRY_RELEASE=${SENTRY_RELEASE}
 
-RUN apk add --no-cache python3 py3-pip nodejs git protobuf pnpm npm deno
+# Install current Node.js from Alpine packages. The default nodejs package is older.
+RUN apk add --no-cache python3 py3-pip nodejs-current git protobuf pnpm deno
 
 WORKDIR /usr/src/app
 
