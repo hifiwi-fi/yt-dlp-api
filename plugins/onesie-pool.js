@@ -19,6 +19,11 @@ export const onesiePoolEnvSchema = /** @type {const} @satisfies {JSONSchema} */ 
       type: 'number',
       default: 172_800_000 // 48 hours in milliseconds
     },
+    YOUTUBE_WORKER_CONCURRENCY: {
+      type: 'number',
+      default: 5,
+      minimum: 1
+    },
     YOUTUBE_WEB_CLIENT_VERSION: {
       type: 'string',
       // Override the WEB client version advertised in onesie player requests.
@@ -76,13 +81,13 @@ export default fp(async function onesiePool (fastify, opts) {
   await fastify.register(import('@piscina/fastify'), {
     filename: workerPath,
     workerData,
-    // Pool tuning for single worker instance
+    // Keep a single worker so requests share one Innertube session.
     minThreads: 1,
     maxThreads: 1,
     // Keep the worker alive indefinitely
     idleTimeout: Infinity,
-    // Process one task at a time to ensure serialization
-    concurrentTasksPerWorker: 1,
+    // Allow overlapping async YouTube requests within the worker thread.
+    concurrentTasksPerWorker: fastify.config.YOUTUBE_WORKER_CONCURRENCY,
     // Allow queuing — discover + unified both use this pool now
     maxQueue: 100
   })
