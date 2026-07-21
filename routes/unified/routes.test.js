@@ -16,6 +16,17 @@ test('getYouTubeExtractionErrorResponse classifies known onesie failures', () =>
   )
 
   assert.deepStrictEqual(
+    getYouTubeExtractionErrorResponse(new Error('outer failure', {
+      cause: new Error('YouTube did not return streaming data for this session')
+    })),
+    {
+      statusCode: 503,
+      code: 'youtube_streaming_data_unavailable',
+      description: 'YouTube did not return streaming data for this session; media URLs are temporarily unavailable'
+    }
+  )
+
+  assert.deepStrictEqual(
     getYouTubeExtractionErrorResponse(new Error('HEAD check failed — got status 403')),
     {
       statusCode: 503,

@@ -242,6 +242,14 @@ export function getYouTubeExtractionErrorResponse (err) {
     }
   }
 
+  if (message.includes('did not return streaming data for this session')) {
+    return {
+      statusCode: 503,
+      code: 'youtube_streaming_data_unavailable',
+      description: 'YouTube did not return streaming data for this session; media URLs are temporarily unavailable'
+    }
+  }
+
   if (message.includes('No matching formats found')) {
     return {
       statusCode: 404,

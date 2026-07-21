@@ -51,8 +51,8 @@ swap_size_mb = 1024
     handlers = ["tls", "http"]
   [services.concurrency]
     type = "connections"
-    hard_limit = 25
-    soft_limit = 20
+    hard_limit = 100
+    soft_limit = 80
 
   [[services.tcp_checks]]
     interval = "15s"
@@ -61,9 +61,9 @@ swap_size_mb = 1024
     restart_limit = 0
 
   [[services.http_checks]]
-    interval = "15s"
-    timeout = "5s"
-    grace_period = "90s"
+    interval = "30s"
+    timeout = "180s"
+    grace_period = "180s"
     restart_limit = 0
     method = "get"
     path = "/health"

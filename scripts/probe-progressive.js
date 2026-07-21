@@ -11,6 +11,7 @@
  */
 import Innertube from 'youtubei.js'
 import { request } from 'undici'
+import pino from 'pino'
 import { onesieRequest, processMetadata } from '../lib/onesie/index.js'
 import { YouTubeTVClientConfig } from '../lib/onesie/tv-config.js'
 
@@ -19,6 +20,8 @@ const videoUrl = 'https://www.youtube.com/watch?v=6Dh-RL__uN4'
 const PLAYER_IDS = ['56af1322', '8a6e7bc4', '6c5cb4f4', '487b9fc1', '56211dc2', '99f55c01', 'ecc3e9a7', '05540cb0', '9f4cc5e4']
 
 const tvConfig = new YouTubeTVClientConfig()
+/** @type {import('fastify').FastifyBaseLogger} */
+const logger = pino({ enabled: false })
 
 /** @param {number} ms */
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
@@ -34,7 +37,7 @@ async function freshSession (innertubeOpts = {}) {
  * @param {import('youtubei.js').Innertube} innertube
  */
 async function probe (innertube) {
-  const raw = await onesieRequest(videoUrl, innertube, tvConfig)
+  const raw = await onesieRequest(videoUrl, innertube, tvConfig, undefined, logger)
   const sd = raw?.streamingData ?? {}
   const formats = sd.formats ?? []
   const adaptive = sd.adaptiveFormats ?? []
@@ -74,7 +77,7 @@ if (mode === 'interleave') {
       t.runs++
       try {
         const innertube = await freshSession(arm === 'baseline' ? {} : { player_id: arm })
-        const raw = await onesieRequest(videoUrl, innertube, tvConfig)
+        const raw = await onesieRequest(videoUrl, innertube, tvConfig, undefined, logger)
         const offered = (raw?.streamingData?.formats ?? []).length > 0
         let status = 'no-progressive'
         if (offered) {
@@ -104,7 +107,7 @@ if (mode === 'experiments') {
     try {
       const innertube = await freshSession()
       const cfg = /** @type {any} */ (innertube.session.context.client).configInfo ?? {}
-      const raw = await onesieRequest(videoUrl, innertube, tvConfig)
+      const raw = await onesieRequest(videoUrl, innertube, tvConfig, undefined, logger)
       const good = (raw?.streamingData?.formats ?? []).length > 0
       const stp = raw?.responseContext?.serviceTrackingParams ?? []
       const e = stp.find((/** @type {any} */ s) => s.service === 'GFEEDBACK')?.params?.find((/** @type {any} */ p) => p.key === 'e')?.value ?? ''
