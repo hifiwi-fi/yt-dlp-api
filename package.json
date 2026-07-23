@@ -58,7 +58,7 @@
     "pyright": "^1.1.411",
     "releasearoni": "^0.2.0",
     "type-fest": "^5.6.0",
-    "typescript": "~6.0.3"
+    "typescript": "~7.0.2"
   },
   "funding": {
     "type": "individual",
