@@ -3,7 +3,7 @@
   "ignore": [],
   "ignoreBinaries": ["python3", "pip3", "flask", "gunicorn"],
   "ignoreUnresolved": [],
-  "ignoreDependencies": ["@types/jsdom", "patch-package"],
+  "ignoreDependencies": ["@types/jsdom"],
   "entry": [
     "app.js",
     "otel.js",
