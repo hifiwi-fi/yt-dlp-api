@@ -13,14 +13,20 @@ concurrency: # prevent concurrent releases
   group: flyctl-roll-region
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   rotate-region:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Install pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
         with:
           version: 11
       - name: Use Node.js
@@ -28,8 +34,8 @@ jobs:
         with:
           node-version-file: package.json
           cache: "pnpm"
-      - run: pnpm install
-      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: pnpm install --frozen-lockfile
+      - uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1 # master
       - name: Switch to a Different Region and Scale
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

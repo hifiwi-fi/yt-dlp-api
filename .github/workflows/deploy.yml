@@ -16,16 +16,21 @@ concurrency: # prevent concurrent releases
   group: flyctl-deploy
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   flyctl_deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
     - uses: actions/checkout@v7
       with:
+        persist-credentials: false
         ref: ${{ github.event.inputs.ref }}
         fetch-depth: 0
     - name: Install pnpm
-      uses: pnpm/action-setup@v6
+      uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
       with:
         version: 11
     - name: Use Node.js
@@ -38,7 +43,7 @@ jobs:
       with:
         python-version: ${{ env.python_version }}
         architecture: "x64"
-    - uses: superfly/flyctl-actions/setup-flyctl@master
+    - uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1 # master
     - run: pnpm install --frozen-lockfile
     - run: pnpm run deploy --remote-only
       env:

@@ -5,9 +5,13 @@ on: [pull_request, push]
 env:
   FORCE_COLOR: 2
 
+permissions: {}
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
 
     strategy:
       matrix:
@@ -27,6 +31,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-python@v7
         with:
@@ -52,7 +58,7 @@ jobs:
         run: protoc --version
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
         with:
           version: 11
       - name: Use Node.js
@@ -60,5 +66,24 @@ jobs:
         with:
           node-version-file: package.json
           cache: "pnpm"
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
       - run: pnpm test
+
+  automerge:
+    needs: test
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      (startsWith(github.head_ref, 'dependabot/github_actions/actions/') ||
+      startsWith(github.head_ref, 'dependabot/github_actions/github/codeql-action'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Merge the tested Dependabot PR and delete its branch.
+      pull-requests: write # Merge the tested Dependabot PR.
+    steps:
+      - name: Merge first-party GitHub Actions Dependabot PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge "$PR_URL" --squash --delete-branch

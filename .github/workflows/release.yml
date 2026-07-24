@@ -11,8 +11,7 @@ on:
         type: boolean
         default: false
 
-permissions:
-  contents: write
+permissions: {}
 
 env:
   FORCE_COLOR: 1
@@ -26,6 +25,8 @@ concurrency:
 jobs:
   version_and_release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Push the release commit and tag and create the GitHub release.
 
     services:
       redis:
@@ -41,9 +42,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          # Keep the credential because npm-bump pushes the release commit and tag.
+          persist-credentials: true
           fetch-depth: 0
       - name: Install pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
         with:
           version: 11
       - name: Use Node.js
@@ -56,7 +59,7 @@ jobs:
         with:
           python-version: ${{ env.python_version }}
           architecture: "x64"
-      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1 # master
       - name: Install Protoc using apt-get
         run: |
           sudo apt-get update
@@ -75,14 +78,23 @@ jobs:
         run: pnpm test
         continue-on-error: true
       - name: Set NEW_VERSION
+        env:
+          INPUT_NEW_VERSION: ${{ inputs.new-version }}
+          REPOSITORY_PUSHED_AT: ${{ github.event.repository.pushed_at }}
         run: |
-          if [ -z "${{ github.event.inputs['new-version'] }}" ]; then
-            echo "NEW_VERSION=$(date -d "${{ github.event.repository.pushed_at }}" +%Y.%-m.%-d)" >> $GITHUB_ENV
+          if [ -n "$INPUT_NEW_VERSION" ]; then
+            if [[ ! $INPUT_NEW_VERSION =~ ^[0-9]{4}\.[0-9]{1,2}\.[0-9]{1,2}$ ]]; then
+              echo "new-version must use YYYY.M.D format" >&2
+              exit 1
+            fi
+            new_version=$INPUT_NEW_VERSION
           else
-            echo "NEW_VERSION=${{ github.event.inputs['new-version'] }}" >> $GITHUB_ENV
+            new_version=$(date -d "$REPOSITORY_PUSHED_AT" +%Y.%-m.%-d)
           fi
-          echo $NEW_VERSION
-      - uses: bcomnes/npm-bump@v3
+
+          printf 'NEW_VERSION=%s\n' "$new_version" >> "$GITHUB_ENV"
+          printf 'NEW_VERSION=%s\n' "$new_version"
+      - uses: bcomnes/npm-bump@8e67058c250579782ed12d6e591c8d07b7b0cae4 # v3
         with:
           git-email: bcomnes@gmail.com
           git-username: ${{ github.actor }}
