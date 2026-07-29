@@ -3,6 +3,7 @@ import { isYouTubeUrl } from '@bret/is-youtube-url'
 import { getYouTubeExtractionErrorResponse } from '../unified/routes.js'
 import { normalizeYtDlpUri } from '../yt-dlp-response.js'
 import { ytDlpFormats } from '../yt-dlp-formats.js'
+import { getParentRequestId } from '#lib/request-correlation.js'
 
 /**
 * @import { FastifyPluginAsyncJsonSchemaToTs } from '@fastify/type-provider-json-schema-to-ts'
@@ -103,7 +104,8 @@ export default async function discoverRoute (fastify, _opts) {
         url,
         format
       } = request.query
-
+      const parentRequestId = getParentRequestId(request.headers)
+      const requestStartTime = performance.now()
       const parsedUrl = new URL(url)
 
       if (isYouTubeUrl(parsedUrl)) {
@@ -111,8 +113,18 @@ export default async function discoverRoute (fastify, _opts) {
           const results = /** @type {BasicInfoMetadataResults} */ (await fastify.runTask({
             url: parsedUrl.toString(),
             format,
-            metadataOnly: true
+            metadataOnly: true,
+            requestId: request.id,
+            parentRequestId,
           }))
+          request.log.info({
+            parentRequestId,
+            sourceUrl: parsedUrl.toString(),
+            format,
+            endpointType: 'discover',
+            outcome: 'success',
+            durationMs: performance.now() - requestStartTime,
+          }, 'YouTube discovery request completed')
           return reply.status(200).send(results)
         } catch (err) {
           const handledError = err instanceof Error ? err : new Error('Unknown error', { cause: err })
@@ -120,10 +132,15 @@ export default async function discoverRoute (fastify, _opts) {
 
           request.log.warn({
             err: handledError,
-            url: parsedUrl.toString(),
+            parentRequestId,
+            sourceUrl: parsedUrl.toString(),
             format,
+            endpointType: 'discover',
+            outcome: 'failure',
+            durationMs: performance.now() - requestStartTime,
             youtubeErrorCode: extractionError.code,
-          }, 'YouTube upstream did not return extractable metadata')
+            youtubeStatusCode: extractionError.statusCode,
+          }, 'YouTube discovery request failed')
 
           if (extractionError.statusCode === 404) {
             /** @type {ExtractKnownResponseType<typeof reply.code<404>>} */
@@ -165,6 +182,15 @@ export default async function discoverRoute (fastify, _opts) {
           const replyBody = /** @type {YtDlpDiscoverBody} */ (await response.body.json())
 
           if (response.statusCode > 399) {
+            request.log.warn({
+              parentRequestId,
+              sourceUrl: parsedUrl.toString(),
+              format,
+              endpointType: 'discover',
+              outcome: 'failure',
+              durationMs: performance.now() - requestStartTime,
+              upstreamStatusCode: response.statusCode,
+            }, 'yt-dlp discovery request failed')
             return reply.status(response.statusCode).send(replyBody)
           }
 
@@ -198,9 +224,25 @@ export default async function discoverRoute (fastify, _opts) {
             release_timestamp: replyBody.release_timestamp ?? null,
           }
 
+          request.log.info({
+            parentRequestId,
+            sourceUrl: parsedUrl.toString(),
+            format,
+            endpointType: 'discover',
+            outcome: 'success',
+            durationMs: performance.now() - requestStartTime,
+          }, 'yt-dlp discovery request completed')
           return reply.code(200).send(responseData)
         } catch (err) {
-          fastify.log.error(new Error('Error while requesting yt-dlp info endpoint during discovery', { cause: err }))
+          request.log.error({
+            err,
+            parentRequestId,
+            sourceUrl: parsedUrl.toString(),
+            format,
+            endpointType: 'discover',
+            outcome: 'failure',
+            durationMs: performance.now() - requestStartTime,
+          }, 'Error while requesting yt-dlp info endpoint during discovery')
           /** @type {ExtractKnownResponseType<typeof reply.code<500>>} */
           const responseData = {
             description: 'Error while requesting yt-dlp info endpoint during discovery'

@@ -2,6 +2,7 @@ import { request as undiciRequest } from 'undici'
 import { isYouTubeUrl } from '@bret/is-youtube-url'
 import { normalizeYtDlpUri } from '../yt-dlp-response.js'
 import { ytDlpFormats } from '../yt-dlp-formats.js'
+import { getParentRequestId } from '#lib/request-correlation.js'
 
 /**
 * @import { FastifyPluginAsyncJsonSchemaToTs } from '@fastify/type-provider-json-schema-to-ts'
@@ -106,7 +107,8 @@ export default async function ytDlpRoute (fastify, _opts) {
         url,
         format
       } = request.query
-
+      const parentRequestId = getParentRequestId(request.headers)
+      const requestStartTime = performance.now()
       const parsedUrl = new URL(url)
 
       if (isYouTubeUrl(parsedUrl)) {
@@ -114,8 +116,20 @@ export default async function ytDlpRoute (fastify, _opts) {
           const results = /** @type {OnesieFormatResults} */ (await fastify.runTask({
             url: parsedUrl.toString(),
             format,
-            returnRedirectUrl: true
+            returnRedirectUrl: true,
+            requestId: request.id,
+            parentRequestId,
           }))
+          const mediaUrlDiagnostics = getMediaUrlDiagnostics(results.url)
+          request.log.info({
+            parentRequestId,
+            sourceUrl: parsedUrl.toString(),
+            format,
+            endpointType: 'unified',
+            outcome: 'success',
+            durationMs: performance.now() - requestStartTime,
+            ...mediaUrlDiagnostics,
+          }, 'YouTube extraction request completed')
           return reply.status(200).send(results)
         } catch (err) {
           const handledError = err instanceof Error ? err : new Error('Unknown error', { cause: err })
@@ -123,10 +137,15 @@ export default async function ytDlpRoute (fastify, _opts) {
 
           request.log.warn({
             err: handledError,
-            url: parsedUrl.toString(),
+            parentRequestId,
+            sourceUrl: parsedUrl.toString(),
             format,
+            endpointType: 'unified',
+            outcome: 'failure',
+            durationMs: performance.now() - requestStartTime,
             youtubeErrorCode: extractionError.code,
-          }, 'YouTube upstream did not return extractable media data')
+            youtubeStatusCode: extractionError.statusCode,
+          }, 'YouTube extraction request failed')
 
           if (extractionError.statusCode === 404) {
             /** @type {ExtractKnownResponseType<typeof reply.code<404>>} */
@@ -171,6 +190,15 @@ export default async function ytDlpRoute (fastify, _opts) {
           const replyBody = /** @type {YtDlpInfoBody} */ (await response.body.json())
 
           if (response.statusCode > 399) {
+            request.log.warn({
+              parentRequestId,
+              sourceUrl: parsedUrl.toString(),
+              format,
+              endpointType: 'unified',
+              outcome: 'failure',
+              durationMs: performance.now() - requestStartTime,
+              upstreamStatusCode: response.statusCode,
+            }, 'yt-dlp extraction request failed')
             return reply.status(response.statusCode).send(replyBody)
           }
 
@@ -202,9 +230,26 @@ export default async function ytDlpRoute (fastify, _opts) {
             release_timestamp: replyBody.release_timestamp ?? null,
           }
 
+          request.log.info({
+            parentRequestId,
+            sourceUrl: parsedUrl.toString(),
+            format,
+            endpointType: 'unified',
+            outcome: 'success',
+            durationMs: performance.now() - requestStartTime,
+            mediaHost: mediaUrl ? new URL(mediaUrl).hostname : null,
+          }, 'yt-dlp extraction request completed')
           return reply.code(200).send(responseData)
         } catch (err) {
-          fastify.log.error(new Error('Error while requesting yt-dlp endpoint data', { cause: err }))
+          request.log.error({
+            err,
+            parentRequestId,
+            sourceUrl: parsedUrl.toString(),
+            format,
+            endpointType: 'unified',
+            outcome: 'failure',
+            durationMs: performance.now() - requestStartTime,
+          }, 'Error while requesting yt-dlp endpoint data')
           /** @type {ExtractKnownResponseType<typeof reply.code<500>>} */
           const responseData = {
             description: 'Error while requesting yt-dlp endpoint'
@@ -214,6 +259,38 @@ export default async function ytDlpRoute (fastify, _opts) {
       }
     }
   )
+}
+
+/**
+ * Extracts safe diagnostics without logging a signed Google Video URL.
+ * @param {string | null | undefined} url
+ */
+function getMediaUrlDiagnostics (url) {
+  if (!url) {
+    return {
+      mediaHost: null,
+      mediaItag: null,
+      mediaUrlExpiresAt: null,
+      mediaUrlTtlSeconds: null,
+      mediaUrlHasIpParameter: false,
+    }
+  }
+
+  const mediaUrl = new URL(url)
+  const expirationSeconds = Number(mediaUrl.searchParams.get('expire'))
+  const hasExpiration = Number.isFinite(expirationSeconds) && expirationSeconds > 0
+
+  return {
+    mediaHost: mediaUrl.hostname,
+    mediaItag: mediaUrl.searchParams.get('itag'),
+    mediaUrlExpiresAt: hasExpiration
+      ? new Date(expirationSeconds * 1000).toISOString()
+      : null,
+    mediaUrlTtlSeconds: hasExpiration
+      ? Math.round(expirationSeconds - Date.now() / 1000)
+      : null,
+    mediaUrlHasIpParameter: mediaUrl.searchParams.has('ip'),
+  }
 }
 
 /**
