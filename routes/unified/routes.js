@@ -122,7 +122,6 @@ export default async function ytDlpRoute (fastify, _opts) {
           }))
           const mediaUrlDiagnostics = getMediaUrlDiagnostics(results.url)
           request.log.info({
-            parentRequestId,
             sourceUrl: parsedUrl.toString(),
             format,
             endpointType: 'unified',
@@ -137,7 +136,6 @@ export default async function ytDlpRoute (fastify, _opts) {
 
           request.log.warn({
             err: handledError,
-            parentRequestId,
             sourceUrl: parsedUrl.toString(),
             format,
             endpointType: 'unified',
@@ -191,7 +189,6 @@ export default async function ytDlpRoute (fastify, _opts) {
 
           if (response.statusCode > 399) {
             request.log.warn({
-              parentRequestId,
               sourceUrl: parsedUrl.toString(),
               format,
               endpointType: 'unified',
@@ -231,7 +228,6 @@ export default async function ytDlpRoute (fastify, _opts) {
           }
 
           request.log.info({
-            parentRequestId,
             sourceUrl: parsedUrl.toString(),
             format,
             endpointType: 'unified',
@@ -243,7 +239,6 @@ export default async function ytDlpRoute (fastify, _opts) {
         } catch (err) {
           request.log.error({
             err,
-            parentRequestId,
             sourceUrl: parsedUrl.toString(),
             format,
             endpointType: 'unified',

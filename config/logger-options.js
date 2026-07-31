@@ -11,6 +11,78 @@ const PinoLevelToSeverityLookup = /** @type {const} */ ({
   fatal: 'CRITICAL',
 })
 
+const urlLogPaths = [
+  'sourceUrl',
+  'url',
+  'req.url',
+  'err.message',
+  'err.stack',
+  'err.description',
+  'err.cause.message',
+  'err.cause.stack',
+]
+
+/**
+ * Remove URL data that can contain credentials or signatures while retaining
+ * enough stable information to identify the source.
+ * @param {unknown} value
+ * @returns {unknown}
+ */
+function redactUrlData (value) {
+  if (value == null) return value
+  if (typeof value !== 'string') return '[Redacted]'
+
+  if (value.startsWith('/') || /^[a-z][a-z\d+.-]*:\/\//i.test(value)) {
+    return sanitizeUrl(value)
+  }
+
+  return value.replace(/https?:\/\/[^\s]+/gi, sanitizeUrlToken)
+}
+
+/**
+ * Preserve punctuation surrounding a URL embedded in prose.
+ * @param {string} value
+ * @returns {string}
+ */
+function sanitizeUrlToken (value) {
+  let urlEnd = value.length
+  while (urlEnd > 0 && /[),.;:!?\]}>'"]/.test(value[urlEnd - 1] ?? '')) {
+    urlEnd--
+  }
+
+  return sanitizeUrl(value.slice(0, urlEnd)) + value.slice(urlEnd)
+}
+
+/**
+ * @param {string} value
+ * @returns {string}
+ */
+function sanitizeUrl (value) {
+  try {
+    const isRelative = value.startsWith('/')
+    const url = new URL(value, 'https://redacted.invalid')
+    const videoId = isYouTubeWatchUrl(url) ? url.searchParams.get('v') : null
+
+    url.username = ''
+    url.password = ''
+    url.search = ''
+    url.hash = ''
+    if (videoId) url.searchParams.set('v', videoId)
+
+    return isRelative ? `${url.pathname}${url.search}` : url.toString()
+  } catch {
+    return '[Redacted]'
+  }
+}
+
+/**
+ * @param {URL} url
+ * @returns {boolean}
+ */
+function isYouTubeWatchUrl (url) {
+  return /(^|\.)youtube\.com$/i.test(url.hostname) && url.pathname === '/watch'
+}
+
 export const loggerOptions = /** @type{const} @satisfies {FastifyServerOptions['logger']} */ ({
   mixin () {
     return {
@@ -18,6 +90,10 @@ export const loggerOptions = /** @type{const} @satisfies {FastifyServerOptions['
     }
   },
   messageKey: 'message',
+  redact: {
+    paths: urlLogPaths,
+    censor: redactUrlData,
+  },
   formatters: {
     level (/** @type{string} */label, /** @type{number} */number) {
       return {

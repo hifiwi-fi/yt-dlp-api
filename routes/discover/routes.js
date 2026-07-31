@@ -118,7 +118,6 @@ export default async function discoverRoute (fastify, _opts) {
             parentRequestId,
           }))
           request.log.info({
-            parentRequestId,
             sourceUrl: parsedUrl.toString(),
             format,
             endpointType: 'discover',
@@ -132,7 +131,6 @@ export default async function discoverRoute (fastify, _opts) {
 
           request.log.warn({
             err: handledError,
-            parentRequestId,
             sourceUrl: parsedUrl.toString(),
             format,
             endpointType: 'discover',
@@ -183,7 +181,6 @@ export default async function discoverRoute (fastify, _opts) {
 
           if (response.statusCode > 399) {
             request.log.warn({
-              parentRequestId,
               sourceUrl: parsedUrl.toString(),
               format,
               endpointType: 'discover',
@@ -225,7 +222,6 @@ export default async function discoverRoute (fastify, _opts) {
           }
 
           request.log.info({
-            parentRequestId,
             sourceUrl: parsedUrl.toString(),
             format,
             endpointType: 'discover',
@@ -236,7 +232,6 @@ export default async function discoverRoute (fastify, _opts) {
         } catch (err) {
           request.log.error({
             err,
-            parentRequestId,
             sourceUrl: parsedUrl.toString(),
             format,
             endpointType: 'discover',
