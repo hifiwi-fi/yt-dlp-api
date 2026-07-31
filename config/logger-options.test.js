@@ -25,4 +25,8 @@ test('redacts sensitive URL data while preserving YouTube video IDs', () => {
     censor('Unable to download https://cdn.example.com/audio.mp3?Signature=secret HTTP 403'),
     'Unable to download https://cdn.example.com/audio.mp3 HTTP 403'
   )
+  assert.equal(
+    censor('Unable to download (https://cdn.example.com/audio.mp3?Signature=secret), retrying.'),
+    'Unable to download (https://cdn.example.com/audio.mp3), retrying.'
+  )
 })
