@@ -6,6 +6,9 @@ test('redacts sensitive URL data while preserving YouTube video IDs', () => {
   const redact = /** @type {Exclude<typeof loggerOptions.redact, string[]>} */ (loggerOptions.redact)
   const censor = /** @type {(value: unknown) => unknown} */ (redact.censor)
 
+  assert.equal(censor(null), null)
+  assert.equal(censor(undefined), undefined)
+  assert.equal(censor({ query: 'secret' }), '[Redacted]')
   assert.equal(
     censor('https://user:password@cdn.example.com/audio.mp3?Signature=secret#token'),
     'https://cdn.example.com/audio.mp3'
