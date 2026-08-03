@@ -4,6 +4,7 @@
  */
 import fp from 'fastify-plugin'
 import { resolve, join } from 'path'
+import { attachRedisCacheDispatcher } from '../lib/redis-cache-dispatcher.js'
 
 export const onesiePoolEnvSchema = /** @type {const} @satisfies {JSONSchema} */ ({
   properties: {
@@ -55,16 +56,17 @@ const __dirname = import.meta.dirname
 export default fp(async function onesiePool (fastify, opts) {
   const workerPath = resolve(join(__dirname, '..', 'lib', 'onesie-worker.js'))
 
+  await fastify.register(import('@fastify/redis'), {
+    url: fastify.config.REDIS_CACHE_URL,
+    family: 6,
+    connectTimeout: 500,
+    maxRetriesPerRequest: 1
+  })
+
   /**
    * @type {WorkerConfig}
    */
   const workerData = {
-    redisUrl: fastify.config.REDIS_CACHE_URL,
-    redisOptions: {
-      family: 6,
-      connectTimeout: 500,
-      maxRetriesPerRequest: 1,
-    },
     innertubeRefreshMs: fastify.config.INNERTUBE_REFRESH_MS,
     tvConfigRefreshMs: fastify.config.TVCONFIG_REFRESH_MS
   }
@@ -91,6 +93,8 @@ export default fp(async function onesiePool (fastify, opts) {
     // Allow queuing — discover + unified both use this pool now
     maxQueue: 100
   })
+
+  attachRedisCacheDispatcher(fastify.piscina, fastify.redis, fastify.log)
 
   // Listen for log messages from workers
   fastify.piscina.on('message', (message) => {
