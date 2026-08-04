@@ -8,6 +8,7 @@ import { mergeEnvSchemas } from '#lib/env-schema.js'
 import { authBasicEnvSchema } from '#plugins/auth-basic.js'
 import { onesiePoolEnvSchema } from '#plugins/onesie-pool.js'
 import { otelMetricsEnvSchema } from '#plugins/otel-metrics.js'
+import { redisEnvSchema } from '#plugins/redis.js'
 import { sentryEnvSchema } from '#plugins/sentry.js'
 import { ytDlpServerEnvSchema } from '#plugins/yt-dlp-server.js'
 
@@ -15,6 +16,7 @@ const pluginEnvSchemas = /** @type {const} @satisfies {readonly EnvSchemaFragmen
   authBasicEnvSchema,
   onesiePoolEnvSchema,
   otelMetricsEnvSchema,
+  redisEnvSchema,
   sentryEnvSchema,
   ytDlpServerEnvSchema,
 ])
