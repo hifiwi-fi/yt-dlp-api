@@ -3,15 +3,12 @@
  * @import { JSONSchema } from 'json-schema-to-ts'
  */
 import fp from 'fastify-plugin'
+import { randomUUID } from 'node:crypto'
 import { resolve, join } from 'path'
-import { attachRedisCacheDispatcher } from '../lib/redis-cache-dispatcher.js'
+import { createRedisCacheDispatcher } from '../lib/redis-cache-dispatcher.js'
 
 export const onesiePoolEnvSchema = /** @type {const} @satisfies {JSONSchema} */ ({
   properties: {
-    REDIS_CACHE_URL: {
-      type: 'string',
-      default: 'redis://localhost:6379/1',
-    },
     TVCONFIG_REFRESH_MS: {
       type: 'number',
       default: 18_000_000
@@ -55,18 +52,17 @@ const __dirname = import.meta.dirname
 
 export default fp(async function onesiePool (fastify, opts) {
   const workerPath = resolve(join(__dirname, '..', 'lib', 'onesie-worker.js'))
-
-  await fastify.register(import('@fastify/redis'), {
-    url: fastify.config.REDIS_CACHE_URL,
-    family: 6,
-    connectTimeout: 500,
-    maxRetriesPerRequest: 1
+  const redisCacheChannelName = `yt-dlp-api-redis-cache-${randomUUID()}`
+  const redisCacheDispatcher = createRedisCacheDispatcher(redisCacheChannelName, fastify.redis, fastify.log)
+  fastify.addHook('onClose', async function closeRedisCacheDispatcher () {
+    redisCacheDispatcher.close()
   })
 
   /**
    * @type {WorkerConfig}
    */
   const workerData = {
+    redisCacheChannelName,
     innertubeRefreshMs: fastify.config.INNERTUBE_REFRESH_MS,
     tvConfigRefreshMs: fastify.config.TVCONFIG_REFRESH_MS
   }
@@ -94,8 +90,6 @@ export default fp(async function onesiePool (fastify, opts) {
     maxQueue: 100
   })
 
-  attachRedisCacheDispatcher(fastify.piscina, fastify.redis, fastify.log)
-
   // Listen for log messages from workers
   fastify.piscina.on('message', (message) => {
     // Check if this is a log message
@@ -107,5 +101,5 @@ export default fp(async function onesiePool (fastify, opts) {
   })
 }, {
   name: 'onesie-pool',
-  dependencies: ['env']
+  dependencies: ['env', 'redis']
 })
