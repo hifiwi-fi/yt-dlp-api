@@ -52,7 +52,7 @@
     "eslint": "^10.8.0",
     "json-schema-to-ts": "^3.1.1",
     "knip": "^6.7.0",
-    "neostandard": "^0.13.0",
+    "neostandard": "0.14.0-next",
     "pyright": "^1.1.411",
     "releasearoni": "^0.2.0",
     "type-fest": "^5.6.0",
