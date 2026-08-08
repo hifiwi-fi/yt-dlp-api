@@ -2,7 +2,7 @@ import fp from 'fastify-plugin'
 import { spawn } from 'node:child_process'
 import { performance } from 'node:perf_hooks'
 import { join, resolve } from 'node:path'
-import { createSubprocessRestarter } from '../lib/shutdown-subprocess.js'
+import { createSubprocessRestarter, killSubprocessGroup } from '../lib/shutdown-subprocess.js'
 import { YtDlpIpcClient, YtDlpIpcError } from '../lib/yt-dlp-ipc/client.js'
 
 /**
@@ -65,7 +65,12 @@ export default fp(async function (fastify, _opts) {
     const child = /** @type {ChildProcessByStdio<Writable, Readable, Readable>} */ (spawnedChild)
     const responseStream = /** @type {Duplex | null} */ (spawnedChild.stdio[3])
     if (!responseStream) {
-      child.kill('SIGKILL')
+      const signalSent = killSubprocessGroup(child, 'SIGKILL')
+      fastify.log.error({
+        pid: child.pid,
+        signal: 'SIGKILL',
+        signalSent,
+      }, 'Force killed Python process group without an IPC response stream')
       throw new Error('Python IPC response stream was not created')
     }
 
@@ -194,6 +199,13 @@ export default fp(async function (fastify, _opts) {
     })
     stream.on('end', () => {
       if (buffered.trim()) fastify.log[level]({ service: 'yt-dlp-worker' }, buffered)
+    })
+    stream.on('error', (err) => {
+      fastify.log.error({
+        err,
+        service: 'yt-dlp-worker',
+        stream: level === 'info' ? 'stdout' : 'stderr',
+      }, 'Python worker log stream error')
     })
   }
 }, {
