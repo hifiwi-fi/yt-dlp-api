@@ -18,7 +18,6 @@ async function testByteRange (url, byteLength = 128) {
   })
 
   const statusCode = res.statusCode
-  console.log({ statusCode })
   const statusOk = statusCode === 206 || statusCode === 200
   assert.ok(statusOk, 'Correct status code received')
 
@@ -45,8 +44,6 @@ test('youtubei decorator onesieFormatRequest test', { todo: process.env.CI }, as
     returnRedirectUrl: true
   })
 
-  console.log({ url: result.url })
-
   // Assert expected values
   assert.strictEqual(result.title, 'bitch lasagna')
   assert.strictEqual(result.duration, 135)
@@ -65,9 +62,6 @@ test('youtubei decorator onesieFormatRequest test', { todo: process.env.CI }, as
   // Byte-range validation with user-agent (skip in CI)
   if (!process.env['CI']) {
     await sleep(3000)
-    const byteRangeData = await testByteRange(result.url)
-    console.log('Byte-range check passed:', byteRangeData.byteLength, 'bytes received')
-  } else {
-    console.log('Skipping byte-range check in CI environment')
+    await testByteRange(result.url)
   }
 })

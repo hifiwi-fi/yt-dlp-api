@@ -12,6 +12,7 @@ const fastifyOptions = /** @type{const} @satisfies {Partial<FastifyServerOptions
   pluginTimeout: 30000,
   trustProxy: true,
   genReqId: function (/* req */) { return hid() },
+  disableRequestLogging: request => request.url === '/health',
   logger: loggerOptions,
 })
 
