@@ -173,6 +173,11 @@ export default fp(async function (fastify, _opts) {
   })
 
   /**
+   * Forward line-buffered Python output through Fastify's structured logger.
+   *
+   * Python stdout is logged at info and stderr at error with the
+   * `yt-dlp-worker` service field.
+   * IPC responses use fd 3 and never pass through this logging path.
    * @param {Readable} stream
    * @param {'info' | 'error'} level
    */

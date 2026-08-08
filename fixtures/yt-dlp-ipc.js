@@ -1,9 +1,23 @@
 import fs from 'node:fs'
 import { FrameDecoder, encodeFrame } from '../lib/yt-dlp-ipc/framed-json.js'
 
+/**
+ * Deterministic subprocess used to test the Node IPC client without starting
+ * Python or making network requests.
+ *
+ * It mirrors the production framing contract: requests arrive on stdin and
+ * responses are written to inherited file descriptor 3.
+ * The command-line mode selects failure scenarios such as a startup protocol
+ * error, an ignored request, a closed response channel, or an invalid envelope.
+ */
 const mode = process.argv[2] ?? 'normal'
 const decoder = new FrameDecoder()
 
+/**
+ * Write one complete response frame synchronously so concurrent fixture timers
+ * cannot interleave frame bytes.
+ * @param {import('../lib/yt-dlp-ipc/framed-json.js').JsonValue} message
+ */
 function send (message) {
   fs.writeSync(3, encodeFrame(message))
 }
