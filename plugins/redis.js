@@ -11,6 +11,12 @@ export const redisEnvSchema = /** @type {const} @satisfies {JSONSchema} */ ({
   required: []
 })
 
+/**
+ * Own the Redis connection in the Fastify process rather than worker threads.
+ * Workers access Redis through their owner's IPC dispatcher, so increasing the
+ * worker pool size does not increase the number of Redis connections created by
+ * this application process.
+ */
 export default fp(async function redis (fastify) {
   await fastify.register(import('@fastify/redis'), {
     url: fastify.config.REDIS_CACHE_URL,
