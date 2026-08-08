@@ -32,6 +32,9 @@ importers:
       '@fastify/otel':
         specifier: ^0.19.0
         version: 0.19.0(@opentelemetry/api@1.9.1)(supports-color@7.2.0)
+      '@fastify/redis':
+        specifier: ^8.0.0
+        version: 8.0.0(supports-color@7.2.0)
       '@fastify/sensible':
         specifier: ^6.0.1
         version: 6.0.4
@@ -77,9 +80,6 @@ importers:
       hyperid:
         specifier: ^4.0.0
         version: 4.0.0
-      ioredis:
-        specifier: ^6.0.0
-        version: 6.0.0(supports-color@7.2.0)
       npm-run-all2:
         specifier: ^9.0.1
         version: 9.0.2
@@ -258,6 +258,9 @@ packages:
   '@fastify/proxy-addr@5.1.0':
     resolution: {integrity: sha512-INS+6gh91cLUjB+PVHfu1UqcB76Sqtpyp7bnL+FYojhjygvOPA9ctiD/JDKsyD9Xgu4hUhCSJBPig/w7duNajw==}
 
+  '@fastify/redis@8.0.0':
+    resolution: {integrity: sha512-+ljufdQHWhUAJmyn5m7GnqjwcuyN2XLgl9Lvxe/o353YQwyw258Rkf0K/2MBkxMKlv3pJvB8SnBrW/XBbcA9tQ==}
+
   '@fastify/sensible@6.0.4':
     resolution: {integrity: sha512-1vxcCUlPMew6WroK8fq+LVOwbsLtX+lmuRuqpcp6eYqu6vmkLwbKTdBWAZwbeaSgCfW4tzUpTIHLLvTiQQ1BwQ==}
 
@@ -299,8 +302,8 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
-  '@ioredis/commands@2.0.0':
-    resolution: {integrity: sha512-vrx0AE/T0h7cRZwfo1M39Cr+ZhZrkf0V8mQN75wucKCxCLD9l/VX6no3gFvrLqD1IlG/1LtzWovqEw3t0Vr9zg==}
+  '@ioredis/commands@1.10.0':
+    resolution: {integrity: sha512-UmeW7z4LfctwoQ5wkhVzgq8tXkreED2xZGpX+Bg+zA+WJFZCT6c062AfCK/Dfk81xZnnwdhJCUMkitihRaoC2Q==}
 
   '@jridgewell/sourcemap-codec@1.5.5':
     resolution: {integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==}
@@ -1789,9 +1792,9 @@ packages:
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
 
-  ioredis@6.0.0:
-    resolution: {integrity: sha512-f+Dtubxfpf6KYFq7WVXJoOLn0bk4TJrMrN9SzeE+jrWrCWj7XX3fA6vkryafhADX+GMymRxgDJDOI33COkJc0w==}
-    engines: {node: '>=20.0.0'}
+  ioredis@5.11.1:
+    resolution: {integrity: sha512-ehuGcf94bQXhfagULNXrJdfnWO38v070jxSx/qE87Kjzmu2fU7ro5EFAb+OPituLqgfyuQaym5DlrNydW2sJ9A==}
+    engines: {node: '>=12.22.0'}
 
   ipaddr.js@2.4.0:
     resolution: {integrity: sha512-9VGk3HGanVE6JoZXHiCpnGy5X0jYDnN4EA4lntFPj+1vIWlFhIylq2CrrCOJH9EAhc5CYhq18F2Av2tgoAPsYQ==}
@@ -2177,6 +2180,10 @@ packages:
 
   redis-errors@1.2.0:
     resolution: {integrity: sha512-1qny3OExCf0UvUV/5wpYKf2YwPcOqXzkwKKSmKHiE6ZMQs5heeE/c8eXK+PNllPvmjgAbfnsbpkGZWy8cBpn9w==}
+    engines: {node: '>=4'}
+
+  redis-parser@3.0.0:
+    resolution: {integrity: sha512-DJnGAeenTdpMEH6uAJRK/uiyEIH9WVsUmoLwzudwGJUwZPp80PDBWPHXSAGNPwNvIXAbe7MSUB1zQFugFml66A==}
     engines: {node: '>=4'}
 
   releasearoni@0.2.0:
@@ -2679,6 +2686,13 @@ snapshots:
       '@fastify/forwarded': 3.0.1
       ipaddr.js: 2.4.0
 
+  '@fastify/redis@8.0.0(supports-color@7.2.0)':
+    dependencies:
+      fastify-plugin: 5.1.0
+      ioredis: 5.11.1(supports-color@7.2.0)
+    transitivePeerDependencies:
+      - supports-color
+
   '@fastify/sensible@6.0.4':
     dependencies:
       '@lukeed/ms': 2.0.2
@@ -2728,7 +2742,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@ioredis/commands@2.0.0': {}
+  '@ioredis/commands@1.10.0': {}
 
   '@jridgewell/sourcemap-codec@1.5.5': {}
 
@@ -4129,13 +4143,14 @@ snapshots:
 
   inherits@2.0.4: {}
 
-  ioredis@6.0.0(supports-color@7.2.0):
+  ioredis@5.11.1(supports-color@7.2.0):
     dependencies:
-      '@ioredis/commands': 2.0.0
+      '@ioredis/commands': 1.10.0
       cluster-key-slot: 1.1.1
       debug: 4.4.3(supports-color@7.2.0)
       denque: 2.1.0
       redis-errors: 1.2.0
+      redis-parser: 3.0.0
       standard-as-callback: 2.1.0
     transitivePeerDependencies:
       - supports-color
@@ -4571,6 +4586,10 @@ snapshots:
   real-require@1.0.0: {}
 
   redis-errors@1.2.0: {}
+
+  redis-parser@3.0.0:
+    dependencies:
+      redis-errors: 1.2.0
 
   releasearoni@0.2.0:
     dependencies:
