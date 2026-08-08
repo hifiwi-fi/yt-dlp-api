@@ -1,7 +1,8 @@
 import fp from 'fastify-plugin'
 import { spawn } from 'node:child_process'
-import { once } from 'node:events'
+
 import { join, resolve } from 'node:path'
+import { createSubprocessRestarter, shutdownSubprocess } from '../lib/shutdown-subprocess.js'
 
 /**
  * @import { ChildProcessByStdio } from 'node:child_process'
@@ -34,9 +35,8 @@ export default fp(async function (fastify, _opts) {
   /** @type {ChildProcessByStdio<null, Readable, Readable> | null} */
   let pythonProcess = null
   let isShuttingDown = false
-  let restartAttempts = 0
-  const maxRestartAttempts = 3
-  const restartDelay = 1000 // 1 second
+  const expectedExits = new WeakSet()
+  const gracefulShutdownTimeoutMs = 3000
 
   const startPythonServer = async () => {
     if (isShuttingDown) return
@@ -72,7 +72,7 @@ export default fp(async function (fastify, _opts) {
         '--workers', '1',
         '--threads', '2',
         '--timeout', '120',
-        '--graceful-timeout', '30',
+        '--graceful-timeout', '3',
         '--keep-alive', '5',
         '--log-level', 'info',
         '--access-logfile', '-',
@@ -83,12 +83,15 @@ export default fp(async function (fastify, _opts) {
       {
         cwd: ytdlpServerDir,
         env,
+        detached: true,
         stdio: ['ignore', 'pipe', 'pipe']
       }
     )
 
+    const child = pythonProcess
+
     // Handle stdout
-    pythonProcess.stdout.on('data', (data) => {
+    child.stdout.on('data', (data) => {
       // @ts-expect-error
       const lines = data.toString().split('\n').filter(line => line.trim())
       // @ts-expect-error
@@ -98,7 +101,7 @@ export default fp(async function (fastify, _opts) {
     })
 
     // Handle stderr
-    pythonProcess.stderr.on('data', (data) => {
+    child.stderr.on('data', (data) => {
       // @ts-expect-error
       const lines = data.toString().split('\n').filter(line => line.trim())
       // @ts-expect-error
@@ -115,35 +118,23 @@ export default fp(async function (fastify, _opts) {
     })
 
     // Handle process exit
-    pythonProcess.on('exit', async (code, signal) => {
-      fastify.log.info({ code, signal, service: 'yt-dlp-server' }, 'Python server exited')
-      pythonProcess = null
+    child.on('exit', async (code, signal) => {
+      const expected = isShuttingDown || expectedExits.has(child)
+      fastify.log.info({
+        pid: child.pid,
+        code,
+        signal,
+        expected,
+        service: 'yt-dlp-server',
+      }, expected ? 'Python server stopped' : 'Python server exited unexpectedly')
 
-      // Attempt restart if not shutting down and within retry limits
-      if (!isShuttingDown && restartAttempts < maxRestartAttempts) {
-        restartAttempts++
-        fastify.log.warn(
-          { attempt: restartAttempts, maxAttempts: maxRestartAttempts },
-          'Attempting to restart Python server'
-        )
+      if (pythonProcess === child) pythonProcess = null
 
-        // Wait before restarting
-        await new Promise(resolve => setTimeout(resolve, restartDelay * restartAttempts))
-
-        try {
-          await startPythonServer()
-          // Reset attempts on successful restart
-          restartAttempts = 0
-        } catch (err) {
-          fastify.log.error({ err }, 'Failed to restart Python server')
-        }
-      } else if (restartAttempts >= maxRestartAttempts) {
-        fastify.log.error('Maximum restart attempts reached for Python server')
-      }
+      await restarter.handleExit({ expected })
     })
 
     // Handle process errors
-    pythonProcess.on('error', (err) => {
+    child.on('error', (err) => {
       fastify.log.error({ err, service: 'yt-dlp-server' }, 'Python server process error')
     })
 
@@ -154,51 +145,61 @@ export default fp(async function (fastify, _opts) {
     fastify.log.info({ bindAddress }, 'yt-dlp Python server started')
   }
 
-  // Start the Python server
-  try {
-    await startPythonServer()
-  } catch (err) {
-    fastify.log.error({ err }, 'Failed to start Python server')
-    throw err
-  }
+  const restarter = createSubprocessRestarter({
+    start: startPythonServer,
+    logger: fastify.log,
+    maxAttempts: 3,
+    restartDelayMs: 1000,
+  })
+
+  // Start only after every plugin has loaded so a later startup failure cannot
+  // orphan a Python process before shutdown hooks become active.
+  fastify.addHook('onReady', async () => {
+    try {
+      await startPythonServer()
+    } catch (err) {
+      fastify.log.error({ err }, 'Failed to start Python server')
+      throw err
+    }
+  })
 
   // Graceful shutdown
   fastify.addHook('onClose', async (instance) => {
     isShuttingDown = true
 
-    if (pythonProcess) {
-      instance.log.info('Shutting down yt-dlp Python server')
+    restarter.shutdown()
 
-      // Send SIGTERM for graceful shutdown
-      pythonProcess.kill('SIGTERM')
+    const child = pythonProcess
+    if (!child) return
 
-      try {
-        // Wait for process to exit (with timeout)
-        await Promise.race([
-          once(pythonProcess, 'exit'),
-          // eslint-disable-next-line promise/param-names
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Shutdown timeout')), 10000)
-          )
-        ])
-      } catch (err) {
-        // Force kill if graceful shutdown fails
-        instance.log.warn('Force killing Python server due to shutdown timeout')
-        pythonProcess.kill('SIGKILL')
-      }
-    }
+    expectedExits.add(child)
+    instance.log.info({ pid: child.pid }, 'Shutting down yt-dlp Python server')
+    await shutdownSubprocess({
+      child,
+      logger: instance.log,
+      gracefulTimeoutMs: gracefulShutdownTimeoutMs,
+    })
   })
 
   // Decorate fastify with Python process info for debugging
   fastify.decorate('pythonServer', {
     get pid () { return pythonProcess?.pid },
-    get running () { return pythonProcess !== null && !pythonProcess.killed },
+    get running () {
+      return pythonProcess !== null &&
+        pythonProcess.exitCode === null &&
+        pythonProcess.signalCode === null
+    },
     restart: async () => {
-      if (pythonProcess) {
-        pythonProcess.kill('SIGTERM')
-        await once(pythonProcess, 'exit')
+      const child = pythonProcess
+      if (child) {
+        expectedExits.add(child)
+        await shutdownSubprocess({
+          child,
+          logger: fastify.log,
+          gracefulTimeoutMs: gracefulShutdownTimeoutMs,
+        })
       }
-      restartAttempts = 0
+      restarter.reset()
       await startPythonServer()
     }
   })
