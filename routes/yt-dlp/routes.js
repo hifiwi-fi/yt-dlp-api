@@ -1,5 +1,3 @@
-import { request as undiciRequest } from 'undici'
-
 /**
 * @import { FastifyPluginAsyncJsonSchemaToTs } from '@fastify/type-provider-json-schema-to-ts'
 **/
@@ -22,18 +20,8 @@ export default async function ytDlpRoute (fastify, _opts) {
       }
     },
     async function (_request, reply) {
-      const response = await undiciRequest(
-        `http://${fastify.config.YTDLPAPI_HOST}/ytdlp`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-
-      reply.status(response.statusCode)
-
-      return await response.body.text()
+      const response = await fastify.pythonServer.ytdlp()
+      return reply.status(response.statusCode).send(response.body)
     }
   )
 }

@@ -1,7 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema-jsonc.json",
   "ignore": [],
-  "ignoreBinaries": ["python3", "pip3", "flask", "gunicorn"],
+  "ignoreBinaries": ["python3", "pip3"],
   "ignoreUnresolved": [],
   "ignoreDependencies": ["@types/jsdom"],
   "entry": [

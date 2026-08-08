@@ -1,0 +1,140 @@
+"""Unit tests for yt-dlp extraction options and response normalization."""
+
+from __future__ import annotations
+
+import threading
+import unittest
+from collections.abc import Callable
+from types import TracebackType
+
+from ytdlp_worker import extraction
+
+
+class MockYoutubeDL:
+    """Controllable YoutubeDL stand-in that records extraction calls."""
+
+    def __init__(
+        self,
+        options: extraction.YoutubeDLOptions,
+        result: object,
+        sanitizer: Callable[[object], object] | None = None,
+        extract_hook: Callable[[], None] | None = None,
+    ) -> None:
+        """Configure the result, sanitizer, and optional extraction synchronization hook."""
+        self.options = dict(options)
+        self.result = result
+        self.sanitizer = sanitizer or (lambda value: value)
+        self.extract_hook = extract_hook
+        self.extracted: list[tuple[str, bool]] = []
+
+    def __enter__(self) -> MockYoutubeDL:
+        """Return this stand-in from the context manager."""
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        """Accept context-manager cleanup without additional resources."""
+        return None
+
+    def extract_info(self, url: str, *, download: bool) -> object:
+        """Record the extraction request and return the configured raw result."""
+        self.extracted.append((url, download))
+        if self.extract_hook is not None:
+            self.extract_hook()
+        return self.result
+
+    def sanitize_info(self, info: object) -> object:
+        """Apply the configured sanitizer to the raw result."""
+        return self.sanitizer(info)
+
+
+class RecordingFactory:
+    """Thread-safe factory that retains every mock YoutubeDL instance it creates."""
+
+    def __init__(
+        self,
+        result: object,
+        sanitizer: Callable[[object], object] | None = None,
+        extract_hook: Callable[[], None] | None = None,
+    ) -> None:
+        """Store configuration copied into each newly created mock instance."""
+        self.result = result
+        self.sanitizer = sanitizer
+        self.extract_hook = extract_hook
+        self.instances: list[MockYoutubeDL] = []
+        self.lock = threading.Lock()
+
+    def __call__(
+        self,
+        options: extraction.YoutubeDLOptions,
+    ) -> MockYoutubeDL:
+        """Create and record one configured mock YoutubeDL instance."""
+        instance = MockYoutubeDL(
+            options,
+            self.result,
+            self.sanitizer,
+            self.extract_hook,
+        )
+        with self.lock:
+            self.instances.append(instance)
+        return instance
+
+
+class ExtractionTests(unittest.TestCase):
+    """Verify extraction configuration and compatibility behavior."""
+
+    def test_info_preserves_options_and_normalizes_url_fields(self) -> None:
+        """Ensure info extraction uses expected options and nulls invalid URL fields."""
+        factory = RecordingFactory(
+            {
+                "url": "https://media.example/audio",
+                "thumbnail": "not-a-url",
+                "webpage_url": "https://example.com/watch/1",
+                "title": "Episode",
+                "formats": [{"url": "data:audio/test"}, {"url": "relative"}],
+            }
+        )
+
+        result = extraction.extract_info(
+            "https://example.com/watch/1",
+            "bestaudio",
+            factory,
+        )
+
+        self.assertEqual(factory.instances[0].options, {
+            "ignore_no_formats_error": True,
+            "format": "bestaudio",
+            "noplaylist": True,
+        })
+        self.assertEqual(
+            factory.instances[0].extracted,
+            [("https://example.com/watch/1", False)],
+        )
+        self.assertEqual(result, {
+            "url": "https://media.example/audio",
+            "thumbnail": None,
+            "webpage_url": "https://example.com/watch/1",
+            "title": "Episode",
+            "formats": [{"url": "data:audio/test"}, {"url": None}],
+        })
+
+    def test_ytdlp_uses_existing_test_video(self) -> None:
+        """Keep the compatibility operation pointed at yt-dlp's canonical test video."""
+        factory = RecordingFactory({"id": "BaW_jenozKc"})
+
+        result = extraction.extract_test_video(factory)
+
+        self.assertEqual(result, {"id": "BaW_jenozKc"})
+        self.assertEqual(factory.instances[0].options, {})
+        self.assertEqual(
+            factory.instances[0].extracted,
+            [(extraction.TEST_VIDEO_URL, False)],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()
