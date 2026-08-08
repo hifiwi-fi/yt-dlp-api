@@ -1,3 +1,5 @@
+"""Framed IPC protocol and concurrent request dispatcher for the yt-dlp worker."""
+
 from __future__ import annotations
 
 import json
@@ -31,6 +33,7 @@ class RequestError(ValueError):
 
 
 def read_exactly(stream: BinaryIO, size: int) -> bytes:
+    """Read an exact byte count or distinguish clean EOF from a truncated frame."""
     chunks: list[bytes] = []
     remaining = size
 
@@ -47,6 +50,7 @@ def read_exactly(stream: BinaryIO, size: int) -> bytes:
 
 
 def read_frame(stream: BinaryIO) -> JsonValue:
+    """Decode one length-prefixed JSON value from a binary request stream."""
     header = read_exactly(stream, FRAME_HEADER_SIZE)
     (length,) = struct.unpack(">I", header)
     if length == 0:
@@ -64,6 +68,7 @@ def read_frame(stream: BinaryIO) -> JsonValue:
 
 
 def encode_frame(value: JsonValue) -> bytes:
+    """Serialize one JSON value with a four-byte big-endian length prefix."""
     payload = json.dumps(
         value,
         ensure_ascii=False,
@@ -75,15 +80,18 @@ def encode_frame(value: JsonValue) -> bytes:
 
 
 def write_frame(stream: BinaryIO, value: JsonValue) -> None:
+    """Write and flush one complete frame to the dedicated response channel."""
     stream.write(encode_frame(value))
     stream.flush()
 
 
 def request_id(request: Request) -> JsonValue:
+    """Return the correlation identifier copied into the matching response."""
     return request.get("id")
 
 
 def request_parameters(request: Request) -> Request:
+    """Extract and validate the optional request parameter object."""
     parameters = request.get("params")
     if parameters is None:
         return request
@@ -93,6 +101,7 @@ def request_parameters(request: Request) -> Request:
 
 
 def required_string(parameters: Request, name: str) -> str:
+    """Read one required non-empty string parameter or raise a request error."""
     value = parameters.get(name)
     if not isinstance(value, str) or not value:
         raise RequestError(f"{name} must be a non-empty string")
@@ -103,6 +112,7 @@ def handle_request(
     request: Request,
     youtube_dl_factory: YoutubeDLFactory | None = None,
 ) -> JsonValue:
+    """Dispatch a validated IPC method to the corresponding extraction function."""
     method = request.get("method")
     if method == "info":
         parameters = request_parameters(request)
@@ -117,10 +127,12 @@ def handle_request(
 
 
 def success_response(identifier: JsonValue, result: JsonValue) -> Request:
+    """Build the success envelope expected by the Node request correlator."""
     return {"id": identifier, "result": result}
 
 
 def error_response(identifier: JsonValue, error: BaseException) -> Request:
+    """Convert an extraction or validation exception into a response envelope."""
     return {
         "id": identifier,
         "error": {
@@ -131,6 +143,7 @@ def error_response(identifier: JsonValue, error: BaseException) -> Request:
 
 
 def lifecycle_response(message_type: str, identifier: JsonValue = None) -> Request:
+    """Build a worker lifecycle message, optionally correlated to a control request."""
     response: Request = {"type": message_type}
     if identifier is not None:
         response["id"] = identifier
@@ -138,6 +151,7 @@ def lifecycle_response(message_type: str, identifier: JsonValue = None) -> Reque
 
 
 def is_shutdown_message(request: Request) -> bool:
+    """Recognize both supported forms of the cooperative shutdown command."""
     return request.get("method") == "shutdown" or request.get("type") == "shutdown"
 
 
@@ -146,13 +160,16 @@ def run_worker(
     response_stream: BinaryIO,
     youtube_dl_factory: YoutubeDLFactory | None = None,
 ) -> int:
+    """Read requests, run up to two extractions concurrently, then drain on shutdown."""
     write_lock = Lock()
 
     def send(response: JsonValue) -> None:
+        """Serialize response writes so executor threads cannot interleave frames."""
         with write_lock:
             write_frame(response_stream, response)
 
     def process(request: Request) -> None:
+        """Execute one request and convert all application failures into envelopes."""
         identifier = request_id(request)
         try:
             result = handle_request(request, youtube_dl_factory)

@@ -1,3 +1,5 @@
+"""Executable entry point for the persistent yt-dlp IPC worker process."""
+
 from __future__ import annotations
 
 import os
@@ -8,6 +10,7 @@ from .ipc import run_worker
 
 
 def main() -> int:
+    """Open inherited IPC channels, eagerly import yt-dlp, and run the worker loop."""
     try:
         response_stream = os.fdopen(3, "wb", buffering=0, closefd=False)
     except OSError as error:

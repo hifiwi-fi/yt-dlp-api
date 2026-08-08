@@ -1,3 +1,5 @@
+"""Unit tests for IPC framing, dispatch, concurrency, and draining."""
+
 from __future__ import annotations
 
 import io
@@ -16,25 +18,32 @@ type JsonValue = extraction.JsonValue
 
 
 class ChunkedBytesIO(io.BytesIO):
+    """Bytes stream that forces frame reads to arrive in two-byte chunks."""
+
     def read(self, size: int = -1) -> bytes:
+        """Return at most two bytes to simulate fragmented pipe delivery."""
         if size < 0:
             size = 2
         return super().read(min(size, 2))
 
 
 class MockYoutubeDL:
+    """Minimal YoutubeDL stand-in used by worker protocol tests."""
+
     def __init__(
         self,
         options: extraction.YoutubeDLOptions,
         result: object,
         extract_hook: Callable[[], None] | None = None,
     ) -> None:
+        """Configure the result and optional hook used to coordinate worker threads."""
         self.options = dict(options)
         self.result = result
         self.extract_hook = extract_hook
         self.extracted: list[tuple[str, bool]] = []
 
     def __enter__(self) -> MockYoutubeDL:
+        """Return this stand-in from the context manager."""
         return self
 
     def __exit__(
@@ -43,24 +52,30 @@ class MockYoutubeDL:
         exc_value: BaseException | None,
         traceback: TracebackType | None,
     ) -> None:
+        """Accept context-manager cleanup without additional resources."""
         return None
 
     def extract_info(self, url: str, *, download: bool) -> object:
+        """Record an extraction and return the configured result."""
         self.extracted.append((url, download))
         if self.extract_hook is not None:
             self.extract_hook()
         return self.result
 
     def sanitize_info(self, info: object) -> object:
+        """Return already JSON-compatible mock data unchanged."""
         return info
 
 
 class RecordingFactory:
+    """Thread-safe factory that records mock instances created by executor threads."""
+
     def __init__(
         self,
         result: object,
         extract_hook: Callable[[], None] | None = None,
     ) -> None:
+        """Store values copied into each mock YoutubeDL instance."""
         self.result = result
         self.extract_hook = extract_hook
         self.instances: list[MockYoutubeDL] = []
@@ -70,6 +85,7 @@ class RecordingFactory:
         self,
         options: extraction.YoutubeDLOptions,
     ) -> MockYoutubeDL:
+        """Create and record one mock YoutubeDL instance."""
         instance = MockYoutubeDL(options, self.result, self.extract_hook)
         with self.lock:
             self.instances.append(instance)
@@ -77,23 +93,31 @@ class RecordingFactory:
 
 
 class FailingYoutubeDL(MockYoutubeDL):
+    """YoutubeDL stand-in that always fails extraction."""
+
     def extract_info(self, url: str, *, download: bool) -> object:
+        """Raise a deterministic extraction failure for envelope tests."""
         raise RuntimeError("extraction failed")
 
 
 class FailingFactory:
+    """Factory that creates failing YoutubeDL stand-ins."""
+
     def __call__(
         self,
         options: extraction.YoutubeDLOptions,
     ) -> FailingYoutubeDL:
+        """Create one deterministic failing extractor."""
         return FailingYoutubeDL(options, {})
 
 
 def framed(*messages: JsonValue) -> io.BytesIO:
+    """Build an in-memory request stream from complete framed messages."""
     return io.BytesIO(b"".join(ipc.encode_frame(message) for message in messages))
 
 
 def ready_response() -> dict[str, JsonValue]:
+    """Return the expected ready envelope for the current test process."""
     return {
         "type": "ready",
         "version": 1,
@@ -103,6 +127,7 @@ def ready_response() -> dict[str, JsonValue]:
 
 
 def decoded_frames(stream: io.BytesIO) -> list[JsonValue]:
+    """Decode every complete response frame from an in-memory stream."""
     stream.seek(0)
     messages: list[JsonValue] = []
     while True:
@@ -113,7 +138,10 @@ def decoded_frames(stream: io.BytesIO) -> list[JsonValue]:
 
 
 class FrameTests(unittest.TestCase):
+    """Verify framing across fragmented and invalid binary streams."""
+
     def test_reads_chunked_length_prefixed_json(self) -> None:
+        """Decode a valid frame even when each read returns only two bytes."""
         message: JsonValue = {
             "id": 7,
             "method": "info",
@@ -124,6 +152,7 @@ class FrameTests(unittest.TestCase):
         self.assertEqual(ipc.read_frame(stream), message)
 
     def test_rejects_truncated_and_invalid_frames(self) -> None:
+        """Reject empty, truncated, and malformed JSON frames."""
         with self.assertRaisesRegex(ipc.FrameError, "cannot be empty"):
             ipc.read_frame(io.BytesIO(struct.pack(">I", 0)))
 
@@ -135,7 +164,10 @@ class FrameTests(unittest.TestCase):
 
 
 class WorkerTests(unittest.TestCase):
+    """Verify worker response envelopes, concurrency, and shutdown intake rules."""
+
     def test_extraction_error_is_returned_and_eof_drains(self) -> None:
+        """Return extraction errors as frames and emit drained after clean EOF."""
         input_stream = framed({
             "id": "request-1",
             "method": "info",
@@ -166,12 +198,14 @@ class WorkerTests(unittest.TestCase):
         ])
 
     def test_shutdown_stops_intake_and_drains_both_workers(self) -> None:
+        """Stop intake at shutdown while allowing both active executor tasks to finish."""
         release = threading.Event()
         both_started = threading.Event()
         start_lock = threading.Lock()
         started = 0
 
         def wait_for_release() -> None:
+            """Block both mock extractions until the test observes concurrent startup."""
             nonlocal started
             with start_lock:
                 started += 1

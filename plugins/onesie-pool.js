@@ -22,6 +22,11 @@ export const onesiePoolEnvSchema = /** @type {const} @satisfies {JSONSchema} */ 
       default: 5,
       minimum: 1
     },
+    YOUTUBE_WORKER_STARTUP_TIMEOUT_MS: {
+      type: 'number',
+      default: 20000,
+      minimum: 1
+    },
     YOUTUBE_WEB_CLIENT_VERSION: {
       type: 'string',
       // Override the WEB client version advertised in onesie player requests.
@@ -92,7 +97,17 @@ export default fp(async function onesiePool (fastify, opts) {
 
   // Submitting a task makes Piscina await the worker module's asynchronous
   // Innertube and Redis cache initialization before Fastify becomes ready.
-  await fastify.piscina.run({ type: 'ready' })
+  const startupTimeoutMs = fastify.config.YOUTUBE_WORKER_STARTUP_TIMEOUT_MS
+  const pluginTimeoutMs = fastify.initialConfig.pluginTimeout
+  if (startupTimeoutMs >= pluginTimeoutMs) {
+    throw new Error(
+      `YOUTUBE_WORKER_STARTUP_TIMEOUT_MS (${startupTimeoutMs}) must be less than Fastify pluginTimeout (${pluginTimeoutMs})`
+    )
+  }
+  await waitForWorkerStartup(
+    fastify.piscina.run({ type: 'ready' }),
+    startupTimeoutMs
+  )
 
   // Listen for log messages from workers
   fastify.piscina.on('message', (message) => {
@@ -107,3 +122,25 @@ export default fp(async function onesiePool (fastify, opts) {
   name: 'onesie-pool',
   dependencies: ['env', 'redis']
 })
+
+/**
+ * Bound asynchronous worker initialization below Fastify's plugin timeout.
+ * @param {Promise<unknown>} startup
+ * @param {number} timeoutMs
+ */
+async function waitForWorkerStartup (startup, timeoutMs) {
+  /** @type {NodeJS.Timeout | undefined} */
+  let timeout
+  try {
+    await Promise.race([
+      startup,
+      new Promise((resolve, reject) => {
+        timeout = setTimeout(() => {
+          reject(new Error(`Onesie worker did not become ready within ${timeoutMs}ms`))
+        }, timeoutMs)
+      })
+    ])
+  } finally {
+    if (timeout) clearTimeout(timeout)
+  }
+}

@@ -1,3 +1,5 @@
+"""Unit tests for yt-dlp extraction options and response normalization."""
+
 from __future__ import annotations
 
 import threading
@@ -9,6 +11,8 @@ from ytdlp_worker import extraction
 
 
 class MockYoutubeDL:
+    """Controllable YoutubeDL stand-in that records extraction calls."""
+
     def __init__(
         self,
         options: extraction.YoutubeDLOptions,
@@ -16,6 +20,7 @@ class MockYoutubeDL:
         sanitizer: Callable[[object], object] | None = None,
         extract_hook: Callable[[], None] | None = None,
     ) -> None:
+        """Configure the result, sanitizer, and optional extraction synchronization hook."""
         self.options = dict(options)
         self.result = result
         self.sanitizer = sanitizer or (lambda value: value)
@@ -23,6 +28,7 @@ class MockYoutubeDL:
         self.extracted: list[tuple[str, bool]] = []
 
     def __enter__(self) -> MockYoutubeDL:
+        """Return this stand-in from the context manager."""
         return self
 
     def __exit__(
@@ -31,25 +37,31 @@ class MockYoutubeDL:
         exc_value: BaseException | None,
         traceback: TracebackType | None,
     ) -> None:
+        """Accept context-manager cleanup without additional resources."""
         return None
 
     def extract_info(self, url: str, *, download: bool) -> object:
+        """Record the extraction request and return the configured raw result."""
         self.extracted.append((url, download))
         if self.extract_hook is not None:
             self.extract_hook()
         return self.result
 
     def sanitize_info(self, info: object) -> object:
+        """Apply the configured sanitizer to the raw result."""
         return self.sanitizer(info)
 
 
 class RecordingFactory:
+    """Thread-safe factory that retains every mock YoutubeDL instance it creates."""
+
     def __init__(
         self,
         result: object,
         sanitizer: Callable[[object], object] | None = None,
         extract_hook: Callable[[], None] | None = None,
     ) -> None:
+        """Store configuration copied into each newly created mock instance."""
         self.result = result
         self.sanitizer = sanitizer
         self.extract_hook = extract_hook
@@ -60,6 +72,7 @@ class RecordingFactory:
         self,
         options: extraction.YoutubeDLOptions,
     ) -> MockYoutubeDL:
+        """Create and record one configured mock YoutubeDL instance."""
         instance = MockYoutubeDL(
             options,
             self.result,
@@ -72,7 +85,10 @@ class RecordingFactory:
 
 
 class ExtractionTests(unittest.TestCase):
+    """Verify extraction configuration and compatibility behavior."""
+
     def test_info_preserves_options_and_normalizes_url_fields(self) -> None:
+        """Ensure info extraction uses expected options and nulls invalid URL fields."""
         factory = RecordingFactory(
             {
                 "url": "https://media.example/audio",
@@ -107,6 +123,7 @@ class ExtractionTests(unittest.TestCase):
         })
 
     def test_ytdlp_uses_existing_test_video(self) -> None:
+        """Keep the compatibility operation pointed at yt-dlp's canonical test video."""
         factory = RecordingFactory({"id": "BaW_jenozKc"})
 
         result = extraction.extract_test_video(factory)
