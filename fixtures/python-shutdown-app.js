@@ -9,10 +9,6 @@ import ytDlpServerPlugin from '../plugins/yt-dlp-server.js'
 /** @type {FastifyPluginAsync} */
 export default async function PythonShutdownApp (fastify, _opts) {
   fastify.addSchema(envSchema)
-  fastify.register(envPlugin, {
-    envData: {
-      YTDLPAPI_HOST: '127.0.0.1:3911',
-    },
-  })
+  fastify.register(envPlugin)
   fastify.register(ytDlpServerPlugin)
 }

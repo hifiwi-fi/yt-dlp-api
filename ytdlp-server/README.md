@@ -1,54 +1,38 @@
-## Python Notes
+## Python worker
 
-Note that python setup is now integrated into the top level `npm i` and `npm run clean` scripts.
+The Python process is a persistent internal `yt-dlp` worker owned by the Fastify plugin.
+It does not listen on a TCP port and is not intended to be started independently.
 
-Not using python much these days so here are some reminders:
+Node writes four-byte big-endian length-prefixed JSON requests to the worker's stdin.
+Python writes framed JSON responses to inherited file descriptor 3.
+Stdout and stderr are reserved for logs so library output cannot corrupt the protocol.
 
-- Create a virtual env like this
+The worker imports `yt-dlp` before emitting its ready frame and handles extraction work with two threads.
+Fastify correlates responses by request ID, applies bounded queue and request deadlines, and restarts the process after a fatal transport failure or hard extraction timeout.
+
+Shutdown is cooperative: Fastify sends a shutdown control frame, Python stops intake, drains active work, emits a drained frame, and exits with code 0.
+Fastify retains a bounded `SIGTERM` and process-group `SIGKILL` fallback.
+
+## Setup
+
+Python setup is integrated into the top-level install and clean scripts.
 
 ```console
 python3 -m venv venv
-```
-
-- Activate virtual env
-
-```console
 source venv/bin/activate
-```
-
-- Install dependencies with pip
-
-```console
 pip3 install -r requirements.txt
 ```
 
-- Copy the extra yt-dlp plugins
+## Tests
+
+Run the standard-library Python tests from the repository root.
 
 ```console
-./copy-getpot_bgutil.sh
+PYTHONPATH=ytdlp-server ytdlp-server/venv/bin/python -m unittest discover -s ytdlp-server/tests -p 'test_*.py'
 ```
 
-- Run the server
+Run Pyright from the repository root.
 
 ```console
-flask --app yt_dlp_api --debug run
+pnpm pyright -p ytdlp-server
 ```
-
-- Update requirements.txt
-
-```console
-pip freeze > requirements.txt
-```
-
-- Install a new dependency
-
-```console
-  pip3 install gunicorn
-```
-
-- https://stackoverflow.com/questions/41457612/how-to-use-requirements-txt-to-install-all-dependencies-in-a-python-project
-- https://flask.palletsprojects.com/en/2.2.x/installation/
-- https://docs.python.org/3/tutorial/venv.html
-- https://docs.brew.sh/Homebrew-and-Python
-- https://kindofblue.com/2019/04/simple-json-api-with-flask/
-- https://flask-basicauth.readthedocs.io/en/latest/

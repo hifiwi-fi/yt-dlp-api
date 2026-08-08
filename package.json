@@ -83,10 +83,11 @@
     "test:neostandard": "eslint .",
     "test:tsc": "tsc",
     "test:pyright": "pyright -p ytdlp-server",
+    "test:python": "PYTHONPATH=ytdlp-server ytdlp-server/venv/bin/python -m unittest discover -s ytdlp-server/tests -p 'test_*.py'",
     "test:node-test": "node --test --test-concurrency=1 --test-reporter=dot",
     "watch": "FORCE_COLOR=1 run-p -n -l watch:*",
     "watch:fastify": "fastify start -w --ignore-watch='node_modules .git ytdlp-server patches test scripts .github .vscode .zed pnpm-lock.yaml CHANGELOG.md' -g 4500 -l info -P -p 3010 --options --address localhost --import ./otel.js app.js",
-    "python-dev": "cd ytdlp-server/ && . venv/bin/activate && flask --app yt_dlp_api --debug run --port 3011",
+
     "print-routes": "fastify print-routes --import ./otel.js app.js",
     "print-plugins": "fastify print-plugins --import ./otel.js app.js",
     "start": "npm run watch",

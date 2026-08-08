@@ -1,4 +1,3 @@
-import { request as undiciRequest } from 'undici'
 import { isYouTubeUrl } from '@bret/is-youtube-url'
 import { getYouTubeExtractionErrorResponse } from '../unified/routes.js'
 import { normalizeYtDlpUri } from '../yt-dlp-response.js'
@@ -167,17 +166,11 @@ export default async function discoverRoute (fastify, _opts) {
         }
       } else {
         try {
-          const params = new URLSearchParams({ url, format: ytDlpFormats[format] })
-          const response = await undiciRequest(
-            `http://${fastify.config.YTDLPAPI_HOST}/info?${params.toString()}`,
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            })
-
-          const replyBody = /** @type {YtDlpDiscoverBody} */ (await response.body.json())
+          const response = await fastify.pythonServer.info({
+            url,
+            format: ytDlpFormats[format],
+          })
+          const replyBody = /** @type {YtDlpDiscoverBody} */ (response.body)
 
           if (response.statusCode > 399) {
             request.log.warn({

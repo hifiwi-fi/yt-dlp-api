@@ -10,7 +10,8 @@ Running yt-dlp, youtubei.js, and googlevideo in a dedicated fastify service.
 
 This is a rapidly evolving solution, so its doesn't make much sense to document thoroughly.
 
-This service starts two processes: A fastify server which listens on 5000 and a python server (loopback only) on 5001. The fastify server makes requests to the flask server.
+This service runs Fastify with one persistent Python child process.
+Fastify sends framed extraction requests to Python over inherited process pipes, and Python keeps `yt-dlp` warm between requests.
 
 This is orchestrated in a Dockerfile, and can also boot from an npm start.
 

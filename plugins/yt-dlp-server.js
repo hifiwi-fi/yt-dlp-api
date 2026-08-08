@@ -1,209 +1,201 @@
 import fp from 'fastify-plugin'
 import { spawn } from 'node:child_process'
-
+import { performance } from 'node:perf_hooks'
 import { join, resolve } from 'node:path'
-import { createSubprocessRestarter, shutdownSubprocess } from '../lib/shutdown-subprocess.js'
+import { createSubprocessRestarter } from '../lib/shutdown-subprocess.js'
+import { YtDlpIpcClient, YtDlpIpcError } from '../lib/yt-dlp-ipc/client.js'
 
 /**
  * @import { ChildProcessByStdio } from 'node:child_process'
- * @import { Readable } from 'node:stream'
+ * @import { Duplex, Readable, Writable } from 'node:stream'
  * @import { JSONSchema } from 'json-schema-to-ts'
  */
 
 export const ytDlpServerEnvSchema = /** @type {const} @satisfies {JSONSchema} */ ({
   properties: {
-    YTDLPAPI_HOST: {
-      type: 'string',
-      default: '127.0.0.1:3011'
+    YTDLPAPI_STARTUP_TIMEOUT_MS: {
+      type: 'integer',
+      default: 10000,
     },
-    YTDLPAPI_USER: {
-      type: 'string',
-      default: 'user'
+    YTDLPAPI_REQUEST_TIMEOUT_MS: {
+      type: 'integer',
+      default: 120000,
     },
-    YTDLPAPI_PASSWORD: {
-      type: 'string',
-      default: 'pass'
+    YTDLPAPI_MAX_PENDING_REQUESTS: {
+      type: 'integer',
+      default: 100,
     },
   },
   required: [],
 })
 
 /**
- * This plugin manages the yt-dlp Flask server as a subprocess
+ * This plugin manages one persistent yt-dlp Python IPC worker.
  */
 export default fp(async function (fastify, _opts) {
-  /** @type {ChildProcessByStdio<null, Readable, Readable> | null} */
-  let pythonProcess = null
+  /** @type {YtDlpIpcClient | null} */
+  let pythonClient = null
   let isShuttingDown = false
   const expectedExits = new WeakSet()
-  const gracefulShutdownTimeoutMs = 3000
+  let lifecycle = Promise.resolve()
 
-  const startPythonServer = async () => {
-    if (isShuttingDown) return
+  const spawnPythonWorker = async () => {
+    if (isShuttingDown || pythonClient?.running) return
 
-    const host = fastify.config.YTDLPAPI_HOST
-    const [bindHost, bindPort] = host.split(':')
-    const bindAddress = `${bindHost}:${bindPort}`
-
-    fastify.log.info({ bindAddress }, 'Starting yt-dlp Python server')
-
-    // Resolve paths relative to the plugin location
-    const pluginDir = import.meta.dirname
-    const projectRoot = resolve(pluginDir, '..')
+    const startedAt = performance.now()
+    const projectRoot = resolve(import.meta.dirname, '..')
     const ytdlpServerDir = join(projectRoot, 'ytdlp-server')
     const venvPath = join(ytdlpServerDir, 'venv')
-    const venvBinPath = join(venvPath, 'bin')
-
-    // Set up environment for the subprocess
+    const pythonPath = join(venvPath, 'bin', 'python')
     const env = {
       ...process.env,
       PYTHONUNBUFFERED: '1',
       VIRTUAL_ENV: venvPath,
-      PATH: `${venvBinPath}:${process.env['PATH']}`,
-      // Fix macOS fork() crash when Objective-C runtime is in use during fork
-      OBJC_DISABLE_INITIALIZE_FORK_SAFETY: 'YES'
+      OBJC_DISABLE_INITIALIZE_FORK_SAFETY: 'YES',
     }
 
-    // Spawn gunicorn process
-    pythonProcess = spawn(
-      'gunicorn',
-      [
-        '-b', bindAddress,
-        '--workers', '1',
-        '--threads', '2',
-        '--timeout', '120',
-        '--graceful-timeout', '3',
-        '--keep-alive', '5',
-        '--log-level', 'info',
-        '--access-logfile', '-',
-        '--error-logfile', '-',
-        '--capture-output',
-        'yt_dlp_api:app'
-      ],
-      {
-        cwd: ytdlpServerDir,
-        env,
-        detached: true,
-        stdio: ['ignore', 'pipe', 'pipe']
-      }
-    )
+    fastify.log.info('Starting yt-dlp Python IPC worker')
 
-    const child = pythonProcess
-
-    // Handle stdout
-    child.stdout.on('data', (data) => {
-      // @ts-expect-error
-      const lines = data.toString().split('\n').filter(line => line.trim())
-      // @ts-expect-error
-      lines.forEach(line => {
-        fastify.log.info({ service: 'yt-dlp-server' }, line)
-      })
+    const spawnedChild = spawn(pythonPath, ['-u', '-m', 'ytdlp_worker'], {
+      cwd: ytdlpServerDir,
+      env,
+      detached: true,
+      stdio: ['pipe', 'pipe', 'pipe', 'pipe'],
     })
+    const child = /** @type {ChildProcessByStdio<Writable, Readable, Readable>} */ (spawnedChild)
+    const responseStream = /** @type {Duplex | null} */ (spawnedChild.stdio[3])
+    if (!responseStream) {
+      child.kill('SIGKILL')
+      throw new Error('Python IPC response stream was not created')
+    }
 
-    // Handle stderr
-    child.stderr.on('data', (data) => {
-      // @ts-expect-error
-      const lines = data.toString().split('\n').filter(line => line.trim())
-      // @ts-expect-error
-      lines.forEach(line => {
-        // Gunicorn logs info to stderr, so check the content
-        if (line.includes('ERROR') || line.includes('CRITICAL')) {
-          fastify.log.error({ service: 'yt-dlp-server' }, line)
-        } else if (line.includes('WARNING')) {
-          fastify.log.warn({ service: 'yt-dlp-server' }, line)
-        } else {
-          fastify.log.info({ service: 'yt-dlp-server' }, line)
-        }
-      })
+    pipeLogs(child.stdout, 'info')
+    pipeLogs(child.stderr, 'error')
+
+    const client = new YtDlpIpcClient({
+      child,
+      responseStream,
+      logger: fastify.log,
+      startupTimeoutMs: fastify.config.YTDLPAPI_STARTUP_TIMEOUT_MS,
+      requestTimeoutMs: fastify.config.YTDLPAPI_REQUEST_TIMEOUT_MS,
+      maxPendingRequests: fastify.config.YTDLPAPI_MAX_PENDING_REQUESTS,
     })
+    pythonClient = client
 
-    // Handle process exit
-    child.on('exit', async (code, signal) => {
+    child.once('exit', async (code, signal) => {
       const expected = isShuttingDown || expectedExits.has(child)
       fastify.log.info({
         pid: child.pid,
         code,
         signal,
         expected,
-        service: 'yt-dlp-server',
-      }, expected ? 'Python server stopped' : 'Python server exited unexpectedly')
+        service: 'yt-dlp-worker',
+      }, expected ? 'Python IPC worker stopped' : 'Python IPC worker exited unexpectedly')
 
-      if (pythonProcess === child) pythonProcess = null
-
+      if (pythonClient === client) pythonClient = null
       await restarter.handleExit({ expected })
     })
 
-    // Handle process errors
-    child.on('error', (err) => {
-      fastify.log.error({ err, service: 'yt-dlp-server' }, 'Python server process error')
-    })
+    await client.ready
+    if (isShuttingDown) {
+      expectedExits.add(child)
+      await client.close()
+      return
+    }
 
-    // Wait a bit for the server to start
-    // In production, you might want to implement a proper health check
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
-    fastify.log.info({ bindAddress }, 'yt-dlp Python server started')
+    fastify.log.info({
+      pid: child.pid,
+      startupMs: Math.round(performance.now() - startedAt),
+    }, 'yt-dlp Python IPC worker ready')
   }
 
+  /**
+   * @param {() => Promise<void>} operation
+   */
+  const runLifecycle = (operation) => {
+    const result = lifecycle.then(operation, operation)
+    lifecycle = result.catch(() => {})
+    return result
+  }
+
+  const startPythonWorker = () => runLifecycle(spawnPythonWorker)
+
   const restarter = createSubprocessRestarter({
-    start: startPythonServer,
+    start: startPythonWorker,
     logger: fastify.log,
     maxAttempts: 3,
     restartDelayMs: 1000,
   })
 
-  // Start only after every plugin has loaded so a later startup failure cannot
-  // orphan a Python process before shutdown hooks become active.
   fastify.addHook('onReady', async () => {
     try {
-      await startPythonServer()
+      await startPythonWorker()
     } catch (err) {
-      fastify.log.error({ err }, 'Failed to start Python server')
+      fastify.log.error({ err }, 'Failed to start Python IPC worker')
       throw err
     }
   })
 
-  // Graceful shutdown
   fastify.addHook('onClose', async (instance) => {
     isShuttingDown = true
-
     restarter.shutdown()
 
-    const child = pythonProcess
-    if (!child) return
+    const client = pythonClient
+    if (!client) return
 
-    expectedExits.add(child)
-    instance.log.info({ pid: child.pid }, 'Shutting down yt-dlp Python server')
-    await shutdownSubprocess({
-      child,
-      logger: instance.log,
-      gracefulTimeoutMs: gracefulShutdownTimeoutMs,
-    })
+    expectedExits.add(client.child)
+    instance.log.info({ pid: client.pid }, 'Shutting down yt-dlp Python IPC worker')
+    await client.close()
   })
 
-  // Decorate fastify with Python process info for debugging
   fastify.decorate('pythonServer', {
-    get pid () { return pythonProcess?.pid },
-    get running () {
-      return pythonProcess !== null &&
-        pythonProcess.exitCode === null &&
-        pythonProcess.signalCode === null
+    get pid () { return pythonClient?.pid },
+    get running () { return pythonClient?.running ?? false },
+    info: async ({ url, format }) => {
+      const client = pythonClient
+      if (!client) throw unavailableError()
+      return client.info({ url, format })
     },
-    restart: async () => {
-      const child = pythonProcess
-      if (child) {
-        expectedExits.add(child)
-        await shutdownSubprocess({
-          child,
-          logger: fastify.log,
-          gracefulTimeoutMs: gracefulShutdownTimeoutMs,
-        })
+    ytdlp: async () => {
+      const client = pythonClient
+      if (!client) throw unavailableError()
+      return client.ytdlp()
+    },
+    restart: () => runLifecycle(async () => {
+      const client = pythonClient
+      if (client) {
+        expectedExits.add(client.child)
+        await client.close()
       }
       restarter.reset()
-      await startPythonServer()
-    }
+      await spawnPythonWorker()
+    }),
   })
+
+  /**
+   * @param {Readable} stream
+   * @param {'info' | 'error'} level
+   */
+  function pipeLogs (stream, level) {
+    let buffered = ''
+    stream.setEncoding('utf8')
+    stream.on('data', (chunk) => {
+      buffered += chunk
+      const lines = buffered.split('\n')
+      buffered = lines.pop() ?? ''
+      for (const line of lines) {
+        if (line.trim()) fastify.log[level]({ service: 'yt-dlp-worker' }, line)
+      }
+    })
+    stream.on('end', () => {
+      if (buffered.trim()) fastify.log[level]({ service: 'yt-dlp-worker' }, buffered)
+    })
+  }
 }, {
   name: 'yt-dlp-server',
   dependencies: ['env'],
 })
+
+function unavailableError () {
+  return new YtDlpIpcError('PYTHON_NOT_AVAILABLE', 'Python IPC worker is not available')
+}
