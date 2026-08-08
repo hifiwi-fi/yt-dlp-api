@@ -90,6 +90,10 @@ export default fp(async function onesiePool (fastify, opts) {
     maxQueue: 100
   })
 
+  // Submitting a task makes Piscina await the worker module's asynchronous
+  // Innertube and Redis cache initialization before Fastify becomes ready.
+  await fastify.piscina.run({ type: 'ready' })
+
   // Listen for log messages from workers
   fastify.piscina.on('message', (message) => {
     // Check if this is a log message
