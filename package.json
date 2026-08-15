@@ -39,7 +39,7 @@
     "pino": "^10.3.0",
     "secure-json-parse": "^4.1.0",
     "undici": "^8.9.0",
-    "youtubei.js": "^17.0.1"
+    "youtubei.js": "^18.0.0"
   },
   "devDependencies": {
     "@fastify/type-provider-json-schema-to-ts": "^5.0.0",
