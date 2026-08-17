@@ -8,8 +8,14 @@ import { loggerOptions } from './logger-options.js'
 
 const hid = hyperid()
 
+const fastifyPluginTimeoutMs = parsePositiveIntegerEnv(
+  'FASTIFY_PLUGIN_TIMEOUT_MS',
+  process.env['FASTIFY_PLUGIN_TIMEOUT_MS'],
+  150000
+)
+
 const fastifyOptions = /** @type{const} @satisfies {Partial<FastifyServerOptions>} */ ({
-  pluginTimeout: 30000,
+  pluginTimeout: fastifyPluginTimeoutMs,
   trustProxy: true,
   genReqId: function (/* req */) { return hid() },
   disableRequestLogging: request => request.url === '/health',
@@ -34,3 +40,19 @@ export const options = /** @type{const} @satisfies {AppOptions} */({
   ...fastifyOptions,
   ...applicationOptions
 })
+
+/**
+ * @param {string} name
+ * @param {string | undefined} value
+ * @param {number} fallback
+ */
+export function parsePositiveIntegerEnv (name, value, fallback) {
+  if (value === undefined) return fallback
+
+  const parsed = Number(value)
+  if (!Number.isSafeInteger(parsed) || parsed < 1) {
+    throw new Error(`${name} must be a positive integer`)
+  }
+
+  return parsed
+}

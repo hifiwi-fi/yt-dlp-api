@@ -24,7 +24,7 @@ export const onesiePoolEnvSchema = /** @type {const} @satisfies {JSONSchema} */ 
     },
     YOUTUBE_WORKER_STARTUP_TIMEOUT_MS: {
       type: 'number',
-      default: 20000,
+      default: 120000,
       minimum: 1
     },
     YOUTUBE_WEB_CLIENT_VERSION: {

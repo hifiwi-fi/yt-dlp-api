@@ -33,6 +33,11 @@ export const envSchema = /** @type {const} @satisfies {JSONSchema} */ ({
       type: 'string',
       default: 'development',
     },
+    FASTIFY_PLUGIN_TIMEOUT_MS: {
+      type: 'number',
+      default: 150000,
+      minimum: 1,
+    },
     HOST: {
       // Hostname and port (if needed)
       type: 'string',
